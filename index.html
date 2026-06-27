@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PPL Study Deck</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Study navigation">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">PPL</div>
+          <div>
+            <h1>PPL Study Deck</h1>
+            <p>Private Pilot from zero</p>
+          </div>
+        </div>
+
+        <nav class="nav-tabs" aria-label="Primary">
+          <button class="nav-button is-active" data-view="dashboard" type="button">Home</button>
+          <button class="nav-button" data-view="lessons" type="button">Lessons</button>
+          <button class="nav-button" data-view="videoCourse" type="button">Video Course</button>
+          <button class="nav-button" data-view="resources" type="button">Reader</button>
+          <button class="nav-button" data-view="quiz" type="button">Practice</button>
+          <button class="nav-button" data-view="flashcards" type="button">Flashcards</button>
+        </nav>
+
+        <div class="sidebar-card">
+          <span class="eyebrow">Next Milestone</span>
+          <strong id="nextMilestone">Week 1: Orientation</strong>
+          <p id="nextMilestoneHint">Start with the FAA overview and the language pilots use.</p>
+        </div>
+
+        <div class="sidebar-profile">
+          <div class="profile-avatar">P</div>
+          <div>
+            <strong>PPL Learner</strong>
+            <span>Study Mode</span>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <section class="topbar">
+          <div>
+            <span class="eyebrow">Free self-study companion</span>
+            <h2 id="viewTitle">Home</h2>
+          </div>
+          <div class="topbar-actions">
+            <button class="ghost-button" id="exportProgress" type="button">Export</button>
+            <button class="danger-button" id="resetProgress" type="button">Reset</button>
+          </div>
+        </section>
+
+        <section class="view is-active" id="dashboardView" aria-labelledby="viewTitle">
+          <div class="metrics-grid">
+            <article class="metric-card">
+              <span>Study Progress</span>
+              <strong id="overallPercent">0%</strong>
+              <div class="meter"><span id="overallMeter"></span></div>
+            </article>
+            <article class="metric-card">
+              <span>Lessons Done</span>
+              <strong id="lessonCount">0 / 0</strong>
+              <div class="mini-note">Mark lessons as complete as you finish reading and watching.</div>
+            </article>
+            <article class="metric-card">
+              <span>Best Quiz Score</span>
+              <strong id="bestScore">0%</strong>
+              <div class="mini-note" id="quizReadiness">Warm up with a short test.</div>
+            </article>
+            <article class="metric-card">
+              <span>Study Streak</span>
+              <strong id="studyStreak">0 days</strong>
+              <div class="mini-note">A study day counts when you complete a lesson, quiz, or card.</div>
+            </article>
+          </div>
+
+          <div class="dashboard-grid">
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">Study path</span>
+                  <h3>10-week beginner route</h3>
+                </div>
+                <button class="text-button" data-jump="lessons" type="button">Open Lessons</button>
+              </div>
+              <div class="timeline" id="dashboardTimeline"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">Today</span>
+                  <h3>Daily routine</h3>
+                </div>
+              </div>
+              <ol class="routine-list">
+                <li>Read 10-15 pages from the FAA material.</li>
+                <li>Watch one video on the same topic.</li>
+                <li>Write five bullet points from memory.</li>
+                <li>Review 5-10 flashcards.</li>
+                <li>Ask how the topic affects a real flight.</li>
+              </ol>
+              <div class="callout">
+                <strong>Instructor check</strong>
+                <p>Use this app for structure, then confirm aircraft-specific numbers, procedures, and endorsements with your CFI.</p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="view" id="lessonsView" aria-labelledby="viewTitle">
+          <div class="lesson-layout">
+            <div class="module-list" id="moduleList" aria-label="Lesson modules"></div>
+            <article class="lesson-detail" id="lessonDetail"></article>
+          </div>
+        </section>
+
+        <section class="view" id="videoCourseView" aria-labelledby="viewTitle">
+          <div class="video-course-shell">
+            <aside class="course-video-list" id="courseVideoList" aria-label="Playlist videos"></aside>
+            <article class="course-video-detail" id="courseVideoDetail"></article>
+          </div>
+        </section>
+
+        <section class="view" id="quizView" aria-labelledby="viewTitle">
+          <div class="quiz-shell">
+            <div class="quiz-controls">
+              <label for="quizModule">Question bank</label>
+              <select id="quizModule"></select>
+              <button class="primary-button" id="startQuiz" type="button">Start Test</button>
+            </div>
+            <div class="quiz-card" id="quizCard"></div>
+          </div>
+        </section>
+
+        <section class="view" id="flashcardsView" aria-labelledby="viewTitle">
+          <div class="flashcard-toolbar">
+            <label for="deckSelect">Deck</label>
+            <select id="deckSelect"></select>
+            <div class="spacer"></div>
+            <button class="ghost-button" id="shuffleCards" type="button">Shuffle</button>
+          </div>
+          <div class="flashcard-stage">
+            <button class="card-nav" id="prevCard" type="button" aria-label="Previous card">‹</button>
+            <article class="study-card" id="studyCard" tabindex="0"></article>
+            <button class="card-nav" id="nextCard" type="button" aria-label="Next card">›</button>
+          </div>
+          <div class="confidence-row">
+            <button class="danger-button" data-confidence="again" type="button">Again</button>
+            <button class="ghost-button" data-confidence="good" type="button">Good</button>
+            <button class="primary-button" data-confidence="known" type="button">Known</button>
+          </div>
+        </section>
+
+        <section class="view" id="resourcesView" aria-labelledby="viewTitle">
+          <div class="source-reader-shell">
+            <aside class="source-list" id="sourceList" aria-label="FAA handbook sources"></aside>
+            <article class="source-reader">
+              <div class="source-reader-header">
+                <div>
+                  <span class="eyebrow">In-app source</span>
+                  <h3 id="sourceReaderTitle">FAA Handbook Reader</h3>
+                </div>
+                <a class="resource-link" id="sourceReaderOpen" href="#" target="_blank" rel="noreferrer">Open PDF</a>
+              </div>
+              <iframe id="sourceReaderFrame" title="FAA handbook PDF reader"></iframe>
+            </article>
+          </div>
+          <div class="resource-grid" id="resourceGrid"></div>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="app.js?v=20260627-restore-video-soft-cards"></script>
+  </body>
+</html>
