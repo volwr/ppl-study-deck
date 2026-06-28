@@ -135,6 +135,69 @@ const modules = [
   }
 ];
 
+const moduleStudyVisuals = {
+  orientation: {
+    label: "Training route",
+    prompt: "Picture the certificate path as a route: learn, solo, test, checkride.",
+    hint: "A strong answer usually names the FAA source and what you would do next.",
+    scene: "route"
+  },
+  aerodynamics: {
+    label: "Forces snapshot",
+    prompt: "Use the picture to separate lift, weight, thrust, and drag before choosing.",
+    hint: "Most aerodynamics questions become easier when you ask what changed: airflow, angle of attack, or energy.",
+    scene: "forces"
+  },
+  systems: {
+    label: "Instrument scan",
+    prompt: "Trace which aircraft system feeds the instrument or limitation in the question.",
+    hint: "POH/AFM for aircraft-specific answers; system diagrams for failure clues.",
+    scene: "panel"
+  },
+  maneuvers: {
+    label: "Pattern picture",
+    prompt: "Imagine the airplane position, energy, and escape plan before answering.",
+    hint: "When the approach stops being stable, the safest plan is usually to reset with a go-around.",
+    scene: "pattern"
+  },
+  weather: {
+    label: "Weather scan",
+    prompt: "Read the question like a preflight weather decision: trend, hazard, and margin.",
+    hint: "Weather products tell different stories: METAR now, TAF forecast, advisories for hazards.",
+    scene: "weather"
+  },
+  airspace: {
+    label: "Airspace stack",
+    prompt: "Sort the question by airport type, airspace class, radio need, and visibility minimums.",
+    hint: "Controlled airspace questions often hinge on the class and whether a tower or clearance is involved.",
+    scene: "airspace"
+  },
+  navigation: {
+    label: "Chart work",
+    prompt: "Sketch the route in your head: course, wind correction, groundspeed, and checkpoint.",
+    hint: "Navigation answers usually start with where you are, where you are going, and what reference proves it.",
+    scene: "navigation"
+  },
+  performance: {
+    label: "Load and runway",
+    prompt: "Connect weight, density altitude, runway length, and personal minimums.",
+    hint: "Performance questions are go/no-go questions hiding in math clothing.",
+    scene: "performance"
+  },
+  regulations: {
+    label: "Rule check",
+    prompt: "Identify whether this is a certificate, currency, equipment, or operating-rule question.",
+    hint: "Part 61 is pilot certification/training; Part 91 is how the flight is operated.",
+    scene: "regs"
+  },
+  checkride: {
+    label: "Oral answer",
+    prompt: "Answer like a pilot: source, decision, risk, and backup plan.",
+    hint: "The examiner is listening for judgment, not just a memorized phrase.",
+    scene: "checkride"
+  }
+};
+
 const resources = [
   ["FAA Become a Pilot", "Official starting point for certificate options and FAA pathways.", "https://www.faa.gov/pilots/become"],
   ["Student Pilot Certificate", "Eligibility and application basics before solo.", "https://www.faa.gov/pilots/become/student_cert"],
@@ -155,43 +218,43 @@ const sourceDocs = [
     id: "afh",
     title: "Airplane Flying Handbook",
     shortTitle: "AFH",
-    file: "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/airplane_handbook",
+    file: "docs/chapters/afh-basic-flight-and-energy-management.pdf",
     description: "FAA flight maneuvers, traffic patterns, takeoffs, landings, emergency procedures, and airplane handling."
   },
   {
     id: "phak",
     title: "Pilot's Handbook of Aeronautical Knowledge",
     shortTitle: "PHAK",
-    file: "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/phak",
+    file: "docs/chapters/phak-chapter-01-introduction-to-flying.pdf",
     description: "Main FAA ground school textbook: aerodynamics, systems, weather, airspace, navigation, performance, and regulations."
   },
   {
     id: "weather",
     title: "Aviation Weather Handbook",
     shortTitle: "Weather",
-    file: "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/aviation-weather-handbook",
+    file: "docs/chapters/weather-theory.pdf",
     description: "FAA aviation weather theory, weather services, hazards, and weather decision-making."
   },
   {
     id: "weight",
     title: "Aircraft Weight and Balance Handbook",
     shortTitle: "W&B",
-    file: "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/aircraft_weight_balance_handbook",
+    file: "docs/chapters/wsc-loading-and-cg-excerpt.pdf",
     description: "FAA source for weight, arm, moment, center of gravity, loading, and weight-and-balance calculations."
   },
   {
     id: "instrument",
     title: "Instrument Flying Handbook",
     shortTitle: "IFH",
-    file: "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/instrument_flying_handbook",
+    file: "docs/chapters/ifh-attitude-and-instrument-concepts.pdf",
     description: "Instrument, attitude flying, navigation systems, and cockpit instrument concepts useful even before instrument training."
   },
   {
     id: "phak-backup",
-    title: "Private Pilot Airman Certification Standards",
-    shortTitle: "ACS",
-    file: "https://www.faa.gov/training_testing/testing/acs",
-    description: "FAA testing standards and checkride task reference."
+    title: "Pilot's Handbook of Aeronautical Knowledge Backup Copy",
+    shortTitle: "PHAK Copy",
+    file: "docs/chapters/phak-chapter-02-aeronautical-decision-making.pdf",
+    description: "Backup copy of the same PHAK file you provided."
   }
 ];
 
@@ -952,9 +1015,11 @@ const defaultState = {
   selectedDeck: "all",
   selectedCourseVideo: courseVideos[0].id,
   selectedLessonVideos: {},
+  selectedLessonTab: "overview",
   selectedSource: "phak",
   seenVideoQuestions: {},
-  videoScores: {}
+  videoScores: {},
+  flaggedQuestions: {}
 };
 
 let state = loadState();
@@ -975,20 +1040,18 @@ const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 
 function loadState() {
-  return {
-    ...defaultState,
-    completedLessons: [],
-    quizScores: {},
-    cardConfidence: {},
-    seenQuestions: {},
-    selectedLessonVideos: {},
-    seenVideoQuestions: {},
-    videoScores: {}
-  };
+  try {
+    const parsed = JSON.parse(localStorage.getItem("ppl-study-state")) || {};
+    delete parsed.lessonVideos;
+    localStorage.setItem("ppl-study-state", JSON.stringify(parsed));
+    return { ...defaultState, ...parsed };
+  } catch {
+    return { ...defaultState };
+  }
 }
 
 function saveState() {
-  // Share build: intentionally does not persist progress or personal data.
+  localStorage.setItem("ppl-study-state", JSON.stringify(state));
 }
 
 function lessonVideosFor(module) {
@@ -1042,7 +1105,7 @@ function setView(view) {
   $$(".view").forEach((section) => section.classList.remove("is-active"));
   $(`#${view}View`).classList.add("is-active");
   $("#viewTitle").textContent = {
-    dashboard: "Home",
+    dashboard: "Good morning, Alex!",
     lessons: "Lessons",
     videoCourse: "Video Course",
     quiz: "Practice",
@@ -1060,17 +1123,48 @@ function renderDashboard() {
   const total = modules.length;
   const percent = total ? Math.round((done / total) * 100) : 0;
   const best = Math.max(0, ...Object.values(state.quizScores).map((score) => score.percent || 0));
+  const next = modules.find((module) => !progressFor(module)) || modules[modules.length - 1];
+  const nextVideo = selectedLessonVideoFor(next);
+  const nextProgress = progressFor(next) ? 100 : Math.min(85, 20 + Math.round(((state.videoScores[nextVideo.id]?.percent || 0) / 100) * 40));
+  const knownCards = Object.values(state.cardConfidence || {}).filter((value) => value === "known").length;
+  const flashcardMastery = flashcards.length ? Math.round((knownCards / flashcards.length) * 100) : 0;
+  const goalCompleted = Math.min(3, (done > 0 ? 1 : 0) + (knownCards > 0 ? 1 : 0) + (best > 0 ? 1 : 0));
+  const goalPercent = Math.round((goalCompleted / 3) * 100);
+  const weakest = best >= 80 ? "Regulations" : "Weather";
+  const nextTask = progressFor(next)
+    ? "Review weak areas and retake practice questions."
+    : state.videoScores[nextVideo.id]
+      ? "Read the assigned handbook section, then take practice questions."
+      : "Watch the next lesson video, then read the assigned handbook section.";
 
+  const todayDate = document.querySelector("#todayDate");
+  if (todayDate) {
+    todayDate.textContent = new Intl.DateTimeFormat(undefined, {
+      weekday: "long",
+      month: "short",
+      day: "numeric"
+    }).format(new Date());
+  }
   $("#overallPercent").textContent = `${percent}%`;
   $("#overallMeter").style.width = `${percent}%`;
-  $("#lessonCount").textContent = `${done} / ${total}`;
+  $("#lessonCount").textContent = `${done ? "Review" : "1"} Lesson`;
   $("#bestScore").textContent = `${best}%`;
   $("#quizReadiness").textContent = best >= 80 ? "Looking checkride-minded." : "Aim for 80%+ module scores.";
-  $("#studyStreak").textContent = `${state.streak} ${state.streak === 1 ? "day" : "days"}`;
+  $("#studyStreak").textContent = `${state.streak}`;
+  $("#testReadinessMeter").style.width = `${best}%`;
+  $("#flashcardMastery").textContent = `${flashcardMastery}%`;
+  $("#flashcardMasteryMeter").style.width = `${flashcardMastery}%`;
+  $("#dailyGoalMeter").style.width = `${goalPercent}%`;
+  $("#dailyGoalText").textContent = `${goalCompleted} / 3 completed`;
+  $("#weakestArea").textContent = weakest;
 
-  const next = modules.find((module) => !progressFor(module)) || modules[modules.length - 1];
-  $("#nextMilestone").textContent = `Week ${next.week}: ${next.title}`;
+  $("#nextMilestone").textContent = `Next up: ${next.title}`;
   $("#nextMilestoneHint").textContent = next.goal;
+  const nextUpButton = document.querySelector("#nextUpButton");
+  if (nextUpButton) {
+    nextUpButton.dataset.openModule = next.id;
+    delete nextUpButton.dataset.jump;
+  }
 
   $("#dashboardTimeline").innerHTML = modules.map((module) => {
     const isDone = progressFor(module);
@@ -1085,6 +1179,26 @@ function renderDashboard() {
       </div>
     `;
   }).join("");
+
+  const continueCard = document.querySelector("#continueLearningCard");
+  if (continueCard) {
+    continueCard.innerHTML = `
+      <div class="continue-content">
+        <span class="eyebrow">Continue Studying</span>
+        <h3>Week ${next.week}: ${next.title}</h3>
+        <p>Lesson ${Math.min(next.week + 2, 5)} of 5 <span aria-hidden="true">-</span> ${next.title}</p>
+        <div class="continue-progress">
+          <div class="meter"><span style="width: ${nextProgress}%"></span></div>
+          <strong>${nextProgress}%</strong>
+        </div>
+        <div class="continue-actions">
+          <button class="primary-button" data-open-module="${next.id}" type="button"><span aria-hidden="true">Play</span> Resume Lesson</button>
+          <button class="ghost-button" data-jump="flashcards" type="button">Cards Review Cards</button>
+        </div>
+      </div>
+      <div class="hero-plane" aria-hidden="true"></div>
+    `;
+  }
 }
 
 function renderLessons() {
@@ -1093,7 +1207,7 @@ function renderLessons() {
     return `
       <button class="module-button ${state.selectedModule === module.id ? "is-active" : ""}" data-module="${module.id}" type="button">
         <strong>Week ${module.week}: ${module.title}</strong>
-        <span>${isDone ? "Complete" : "Not complete"} - ${module.know.length} targets</span>
+        <span>${isDone ? "Complete" : "Not complete"} - ${module.know.length} knowledge targets</span>
       </button>
     `;
   }).join("");
@@ -1109,29 +1223,51 @@ function renderLessons() {
   const selectedSourcePlan = sourcePlan[0];
   const selectedDoc = selectedSourcePlan ? sourceDocs.find((item) => item.id === selectedSourcePlan[0]) : sourceDocs[0];
   const selectedPage = selectedSourcePlan?.[2] || 1;
-
-  $("#lessonDetail").innerHTML = `
-    <div class="lesson-hero">
-      <div>
-        <span class="eyebrow">Lesson ${module.week}</span>
-        <h3>${module.title}</h3>
-        <p>${module.goal}</p>
-      </div>
-      <button class="${isDone ? "ghost-button" : "primary-button"}" id="toggleLesson" type="button">
-        ${isDone ? "Mark Incomplete" : "Mark as Complete"}
-      </button>
-    </div>
-    <div class="study-workspace">
-      <section class="watch-panel">
+  const activeTab = state.selectedLessonTab || "overview";
+  const selectedVideoIndex = Math.max(0, lessonVideos.findIndex((video) => video.id === selectedVideo.id));
+  const previousVideo = lessonVideos[(selectedVideoIndex - 1 + lessonVideos.length) % lessonVideos.length];
+  const nextVideo = lessonVideos[(selectedVideoIndex + 1) % lessonVideos.length];
+  const lessonProgress = isDone ? 100 : Math.min(85, 20 + Math.round(((state.videoScores[selectedVideo.id]?.percent || 0) / 100) * 40));
+  const tabs = ["overview", "watch", "read", "practice", "notes"];
+  const tabLabels = {
+    overview: "Overview",
+    watch: "Watch",
+    read: "Read",
+    practice: "Practice",
+    notes: "Notes"
+  };
+  const tabContent = {
+    overview: `
+      <section class="lesson-tab-panel">
+        <div class="overview-grid">
+          <article class="study-block">
+            <h4>Lesson Goal</h4>
+            <p>${module.goal}</p>
+            <div class="lesson-progress-row"><span>Current progress</span><strong>${lessonProgress}%</strong></div>
+            <div class="meter"><span style="width: ${lessonProgress}%"></span></div>
+          </article>
+          ${renderChecklist("Read", module.read)}
+          ${renderChecklist("Watch", module.watch)}
+          ${renderChecklist("Know by the end", module.know)}
+        </div>
+      </section>
+    `,
+    watch: `
+      <section class="lesson-tab-panel watch-panel">
         <div class="panel-header">
           <div>
-            <span class="eyebrow">Watch first</span>
+            <span class="eyebrow">Selected Video</span>
             <h4>${selectedVideo.title}</h4>
           </div>
-          <button class="primary-button" id="startLessonVideoTest" type="button">Test After Watching</button>
+          <a class="resource-link" href="https://www.youtube.com/watch?v=${selectedVideo.id}&list=${COURSE_PLAYLIST_ID}" target="_blank" rel="noreferrer">Open on YouTube</a>
         </div>
         <div class="video-frame" id="videoFrame">
           <iframe id="lessonVideo" title="${selectedVideo.title}" src="${youtubeEmbedUrl(selectedVideo.id, COURSE_PLAYLIST_ID)}" ${youtubeIframeAttrs()}></iframe>
+        </div>
+        <div class="video-nav-row">
+          <button class="ghost-button" data-lesson-video="${previousVideo.id}" type="button">Previous Video</button>
+          <button class="ghost-button" data-lesson-video="${nextVideo.id}" type="button">Next Video</button>
+          <button class="primary-button" id="startLessonVideoTest" type="button">Test After Watching</button>
         </div>
         <div class="lesson-video-strip" aria-label="Lesson videos">
           ${lessonVideos.map((video, index) => `
@@ -1144,103 +1280,122 @@ function renderLessons() {
         </div>
         <div class="lesson-video-quiz" id="lessonVideoQuiz">
           <div class="score-display">
-            <span class="eyebrow">Ready when you are</span>
-            <h3>Watch the selected video, then test yourself here.</h3>
-            <p>The test uses questions tied to this video and avoids repeats until the pool is used.</p>
+            <span class="eyebrow">Video Test</span>
+            <h3>Watch, then test recall.</h3>
+            <p>Questions are tied to the selected video and rotate after each attempt.</p>
           </div>
         </div>
         <details class="video-search-details">
-          <summary>Find another video for this lesson</summary>
+          <summary>Additional video searches</summary>
           <div class="video-library" id="videoLibrary">
-          ${videoSources.map((source) => `
-            <article class="video-card">
-              <span class="eyebrow">${source.provider}</span>
-              <h5>${source.title}</h5>
-              <p>Free video search for this lesson topic.</p>
-              <a class="primary-button" href="${source.href}" target="_blank" rel="noreferrer">Open Videos</a>
-            </article>
-          `).join("")}
+            ${videoSources.map((source) => `
+              <article class="video-card">
+                <span class="eyebrow">${source.provider}</span>
+                <h5>${source.title}</h5>
+                <a class="resource-link" href="${source.href}" target="_blank" rel="noreferrer">Open Search</a>
+              </article>
+            `).join("")}
           </div>
         </details>
       </section>
-      <section class="reader-panel">
-        <div class="panel-header">
-          <div>
-            <span class="eyebrow">Read while studying</span>
-            <h4>Lesson briefing</h4>
+    `,
+    read: `
+      <section class="lesson-tab-panel">
+        <div class="reader-panel">
+          <div class="panel-header">
+            <div>
+              <span class="eyebrow">Lesson Briefing</span>
+              <h4>Read and summarize</h4>
+            </div>
+            <span class="section-count">${sourcePlan.length} readings</span>
+          </div>
+          <p class="brief-text">${reading.brief}</p>
+          <div class="reading-sections">
+            ${reading.sections.map(([title, body]) => `
+              <article class="reading-section">
+                <h5>${title}</h5>
+                <p>${body}</p>
+              </article>
+            `).join("")}
           </div>
         </div>
-        <p class="brief-text">${reading.brief}</p>
-        <div class="reading-sections">
-          ${reading.sections.map(([title, body]) => `
-            <article class="reading-section">
-              <h5>${title}</h5>
-              <p>${body}</p>
-            </article>
-          `).join("")}
-        </div>
-        <div class="keyterm-list">
-          <h5>Key terms</h5>
-          <div>
-            ${notes.keyTerms.map((term) => `<span>${term}</span>`).join("")}
+        <div class="lesson-reader-layout">
+          <div class="lesson-source-list">
+            ${sourcePlan.map(([docId, label, page], index) => {
+              const entry = sourcePlan[index];
+              const doc = sourceDocs.find((item) => item.id === docId);
+              return `
+                <button class="lesson-source-button ${index === 0 ? "is-active" : ""}" data-lesson-source-doc="${docId}" data-lesson-source-page="${page}" data-lesson-source-file="${entry[3] || ""}" data-lesson-source-label="${label}" type="button">
+                  <span class="source-badge">${doc.shortTitle}</span>
+                  <strong>${label}</strong>
+                  <em>${doc.title}</em>
+                  <small>${entry[3] ? "Chapter PDF" : `Page ${page || 1}`}</small>
+                </button>
+              `;
+            }).join("")}
           </div>
+          <article class="lesson-reader-frame-card">
+            <div class="source-reader-header">
+              <div>
+                <span class="eyebrow">${selectedDoc.shortTitle}</span>
+                <h3 id="lessonReaderTitle">${selectedSourcePlan ? selectedSourcePlan[1] : selectedDoc.title}</h3>
+              </div>
+              <a class="resource-link" id="lessonReaderOpen" href="${selectedSourcePlan ? lessonSourceEntryUrl(selectedSourcePlan) : lessonSourceUrl(selectedDoc.id, selectedPage)}" target="_blank" rel="noreferrer">Open PDF</a>
+            </div>
+            <iframe id="lessonReaderFrame" title="Lesson handbook chapter reader" src="${selectedSourcePlan ? lessonSourceEntryUrl(selectedSourcePlan) : lessonSourceUrl(selectedDoc.id, selectedPage)}"></iframe>
+          </article>
         </div>
+      </section>
+    `,
+    practice: `
+      <section class="lesson-tab-panel">
+        <div class="practice-brief">
+          <div>
+            <span class="eyebrow">Practice</span>
+            <h4>Test Week ${module.week}</h4>
+            <p>Use this as a short written-test checkpoint for the selected module.</p>
+          </div>
+          <button class="primary-button" id="lessonQuiz" type="button">Start Module Test</button>
+        </div>
+        ${renderQuizVisual(module.id, true)}
         <div class="drill-box">
           <strong>Check yourself</strong>
           <p>${reading.drill}</p>
         </div>
       </section>
-    </div>
-    <section class="lesson-source-panel lesson-reader-panel">
-      <div class="panel-header">
-        <div>
-          <span class="eyebrow">Opened chapter reader</span>
-          <h4>${selectedSourcePlan ? selectedSourcePlan[1] : "FAA handbook section"}</h4>
+    `,
+    notes: `
+      <section class="lesson-tab-panel">
+        <div class="keyterm-list">
+          <h5>Key terms</h5>
+          <div>${notes.keyTerms.map((term) => `<span>${term}</span>`).join("")}</div>
         </div>
-        <span class="section-count">${sourcePlan.length} readings</span>
-      </div>
-      <div class="lesson-reader-layout">
-        <div class="lesson-source-list">
-          ${sourcePlan.map(([docId, label, page], index) => {
-          const entry = sourcePlan[index];
-          const doc = sourceDocs.find((item) => item.id === docId);
-          return `
-            <button class="lesson-source-button ${index === 0 ? "is-active" : ""}" data-lesson-source-doc="${docId}" data-lesson-source-page="${page}" data-lesson-source-file="${entry[3] || ""}" data-lesson-source-label="${label}" type="button">
-              <span class="source-badge">${doc.shortTitle}</span>
-              <strong>${label}</strong>
-              <em>${doc.title}</em>
-              <small>${entry[3] ? "Chapter PDF" : `Open here${page ? ` - page ${page}` : ""}`}</small>
-            </button>
-          `;
-          }).join("")}
-        </div>
-        <article class="lesson-reader-frame-card">
-          <div class="source-reader-header">
-            <div>
-              <span class="eyebrow">${selectedDoc.shortTitle}</span>
-              <h3 id="lessonReaderTitle">${selectedSourcePlan ? selectedSourcePlan[1] : selectedDoc.title}</h3>
-            </div>
-            <a class="resource-link" id="lessonReaderOpen" href="${selectedSourcePlan ? lessonSourceEntryUrl(selectedSourcePlan) : lessonSourceUrl(selectedDoc.id, selectedPage)}" target="_blank" rel="noreferrer">Open PDF</a>
+        <div class="checklist">
+          <h4>Related links</h4>
+          <div class="resource-links">
+            ${module.links.map(([label, href]) => `<a class="resource-link" href="${href}" target="_blank" rel="noreferrer">${label}</a>`).join("")}
+            <a class="resource-link" href="https://quizlet.com/search?query=private%20pilot%20${encodeURIComponent(module.title)}&type=sets" target="_blank" rel="noreferrer">Quizlet Search</a>
           </div>
-          <iframe id="lessonReaderFrame" title="Lesson handbook chapter reader" src="${selectedSourcePlan ? lessonSourceEntryUrl(selectedSourcePlan) : lessonSourceUrl(selectedDoc.id, selectedPage)}"></iframe>
-        </article>
-      </div>
-    </section>
-    <div class="checklist-grid">
-      ${renderChecklist("Read", module.read)}
-      ${renderChecklist("Watch", module.watch)}
-      ${renderChecklist("Know by the end", module.know)}
-      <div class="checklist">
-        <h4>Free links</h4>
-        <div class="resource-links">
-          ${module.links.map(([label, href]) => `<a class="resource-link" href="${href}" target="_blank" rel="noreferrer">${label}</a>`).join("")}
         </div>
+      </section>
+    `
+  };
+
+  $("#lessonDetail").innerHTML = `
+    <div class="lesson-hero">
+      <div>
+        <span class="eyebrow">Lesson ${module.week}</span>
+        <h3>${module.title}</h3>
+        <p>${module.goal}</p>
       </div>
+      <button class="${isDone ? "ghost-button" : "primary-button"}" id="toggleLesson" type="button">
+        ${isDone ? "Mark Incomplete" : "Mark as Complete"}
+      </button>
     </div>
-    <div class="lesson-actions">
-      <button class="ghost-button" id="lessonQuiz" type="button">Test This Week</button>
-      <a class="resource-link" href="https://quizlet.com/search?query=private%20pilot%20${encodeURIComponent(module.title)}&type=sets" target="_blank" rel="noreferrer">Quizlet Search</a>
+    <div class="lesson-tabs" role="tablist" aria-label="Lesson sections">
+      ${tabs.map((tab) => `<button class="lesson-tab ${activeTab === tab ? "is-active" : ""}" data-lesson-tab="${tab}" type="button">${tabLabels[tab]}</button>`).join("")}
     </div>
+    ${tabContent[activeTab] || tabContent.overview}
   `;
 }
 
@@ -1253,6 +1408,44 @@ function renderChecklist(title, items) {
   `;
 }
 
+function studyVisualFor(moduleId) {
+  return moduleStudyVisuals[moduleId] || moduleStudyVisuals.orientation;
+}
+
+function renderStudySvg(scene) {
+  const svgAttrs = `viewBox="0 0 320 180" role="img" aria-hidden="true" focusable="false"`;
+  const scenes = {
+    route: `<svg ${svgAttrs}><path class="sky-fill" d="M0 0h320v180H0z"/><path class="cloud-fill" d="M44 55c8-20 38-19 45 1 14-5 29 4 32 18H24c2-12 10-19 20-19z"/><path class="land-fill" d="M0 132h320v48H0z"/><path class="line-stroke" d="M45 132c45-50 95-52 140-18 30 23 56 24 88-12" fill="none"/><circle class="accent-fill" cx="45" cy="132" r="8"/><circle class="accent-fill" cx="273" cy="102" r="8"/><path class="plane-fill" d="M185 70l67 20-67 19 12-22-12-17z"/></svg>`,
+    forces: `<svg ${svgAttrs}><path class="sky-fill" d="M0 0h320v180H0z"/><path class="plane-fill" d="M76 86l128-31 56 35-56 35L76 94z"/><path class="accent-stroke" d="M161 31v38M161 151v-38M54 89h55M266 89h-55" fill="none"/><path class="accent-fill" d="M161 21l-9 15h18zM161 159l9-15h-18zM42 89l15-9v18zM278 89l-15 9V80z"/></svg>`,
+    panel: `<svg ${svgAttrs}><rect class="panel-fill" x="28" y="28" width="264" height="124" rx="16"/><circle class="dial-fill" cx="96" cy="76" r="28"/><circle class="dial-fill" cx="160" cy="76" r="28"/><circle class="dial-fill" cx="224" cy="76" r="28"/><path class="accent-stroke" d="M96 76l15-12M160 76v-18M224 76l-16 10" fill="none"/><rect class="screen-fill" x="75" y="118" width="170" height="17" rx="8"/></svg>`,
+    pattern: `<svg ${svgAttrs}><path class="land-fill" d="M0 0h320v180H0z"/><rect class="runway-fill" x="138" y="38" width="44" height="112" rx="4"/><path class="runway-mark" d="M160 50v16M160 78v16M160 106v16M160 134v10"/><path class="accent-stroke" d="M160 142c-74 0-99-73-50-107 42-28 116-14 130 39 11 44-28 66-80 68z" fill="none"/><path class="plane-fill" d="M92 60l45-10-20 38-9-16-16-12z"/></svg>`,
+    weather: `<svg ${svgAttrs}><path class="sky-fill" d="M0 0h320v180H0z"/><path class="cloud-fill" d="M76 68c12-31 60-29 71 1 23-10 49 6 54 30H44c3-20 16-31 32-31z"/><path class="cloud-fill" d="M203 49c8-20 37-19 45 1 14-6 31 3 34 19h-98c2-12 9-20 19-20z"/><path class="warning-fill" d="M144 102l-20 45 27-15-10 36 35-52-29 13z"/></svg>`,
+    airspace: `<svg ${svgAttrs}><path class="sky-fill" d="M0 0h320v180H0z"/><path class="land-fill" d="M0 142h320v38H0z"/><path class="airspace-stroke" d="M50 142V94c0-29 25-52 58-52h104c33 0 58 23 58 52v48M90 142v-29c0-23 18-41 42-41h56c24 0 42 18 42 41v29M130 142v-17c0-16 13-29 30-29s30 13 30 29v17" fill="none"/><rect class="runway-fill" x="136" y="150" width="48" height="10" rx="3"/></svg>`,
+    navigation: `<svg ${svgAttrs}><path class="map-fill" d="M0 0h320v180H0z"/><path class="map-line" d="M34 46c55 24 79-24 126 1 48 26 66 9 126-2M30 132c72-31 103 24 154 2 45-19 62-6 104 17" fill="none"/><path class="accent-stroke" d="M61 126L258 52" fill="none"/><circle class="accent-fill" cx="61" cy="126" r="8"/><circle class="accent-fill" cx="258" cy="52" r="8"/><path class="plane-fill" d="M168 78l48-3-37 31-4-18-7-10z"/></svg>`,
+    performance: `<svg ${svgAttrs}><path class="land-fill" d="M0 0h320v180H0z"/><path class="runway-fill" d="M24 124h272v32H24z"/><path class="runway-mark" d="M52 140h40M116 140h40M180 140h40M244 140h28"/><path class="accent-stroke" d="M45 108c54-54 131-63 224-24" fill="none"/><rect class="load-fill" x="70" y="47" width="46" height="38" rx="5"/><rect class="load-fill" x="130" y="36" width="46" height="49" rx="5"/><rect class="load-fill" x="190" y="55" width="46" height="30" rx="5"/></svg>`,
+    regs: `<svg ${svgAttrs}><path class="paper-fill" d="M72 24h176v132H72z"/><path class="line-stroke" d="M102 59h116M102 85h116M102 111h78" fill="none"/><path class="accent-fill" d="M80 24h56v38H80z"/><circle class="stamp-fill" cx="222" cy="120" r="25"/><path class="stamp-mark" d="M210 120l8 8 17-20" fill="none"/></svg>`,
+    checkride: `<svg ${svgAttrs}><path class="sky-fill" d="M0 0h320v180H0z"/><rect class="paper-fill" x="49" y="38" width="100" height="108" rx="8"/><path class="line-stroke" d="M70 67h58M70 90h58M70 113h36" fill="none"/><path class="plane-fill" d="M171 92l82-25-32 70-15-30-35-15z"/><circle class="accent-fill" cx="244" cy="55" r="10"/></svg>`
+  };
+  return scenes[scene] || scenes.route;
+}
+
+function renderQuizVisual(moduleId, compact = false) {
+  const visual = studyVisualFor(moduleId);
+  return `
+    <aside class="quiz-visual-panel ${compact ? "is-compact" : ""}">
+      <div class="study-illustration scene-${visual.scene}">
+        ${renderStudySvg(visual.scene)}
+      </div>
+      <div class="visual-copy">
+        <span class="eyebrow">${visual.label}</span>
+        <p>${visual.prompt}</p>
+        <button class="text-button visual-hint-toggle" data-reveal-hint type="button">Reveal study hint</button>
+        <p class="visual-hint">${visual.hint}</p>
+      </div>
+    </aside>
+  `;
+}
+
 function renderQuizSetup() {
   const options = [`<option value="all">All modules</option>`]
     .concat(modules.map((module) => `<option value="${module.id}">Week ${module.week}: ${module.title}</option>`));
@@ -1262,12 +1455,19 @@ function renderQuizSetup() {
 }
 
 function renderQuizIntro() {
+  const selectedId = $("#quizModule").value === "all" ? state.selectedModule || "orientation" : $("#quizModule").value;
   $("#quizCard").innerHTML = `
-    <div class="score-display">
-      <span class="eyebrow">Knowledge check</span>
-      <h3>Pick a question bank and start a short test.</h3>
-      <p>Each module has checkpoint questions. Explanations appear after each answer so the quiz teaches as it grades.</p>
-      <button class="primary-button" id="startQuizInline" type="button">Start Test</button>
+    <div class="quiz-start-layout">
+      <div class="score-display">
+        <span class="eyebrow">Knowledge check</span>
+        <h3>Pick a question bank and start a short test.</h3>
+        <p>Each module has checkpoint questions. Explanations appear after each answer so the quiz teaches as it grades.</p>
+        <div class="quiz-start-actions">
+          <button class="primary-button" id="startQuizInline" type="button">Start Test</button>
+          <span>10 module questions or 20 mixed questions</span>
+        </div>
+      </div>
+      ${renderQuizVisual(selectedId, true)}
     </div>
   `;
 }
@@ -1304,15 +1504,30 @@ function startQuiz() {
 
 function renderQuizQuestion() {
   const question = currentQuiz[quizIndex];
+  const answeredCount = quizAnswers.filter(Boolean).length;
+  const flagged = Boolean(state.flaggedQuestions?.[question.questionId]);
   $("#quizCard").innerHTML = `
     <div class="quiz-progress">
       <span>Question ${quizIndex + 1} of ${currentQuiz.length}</span>
-      <span>${quizAnswers.filter(Boolean).length} correct</span>
+      <span>${answeredCount} correct</span>
     </div>
     <div class="quiz-meter"><span style="width: ${Math.round(((quizIndex + 1) / currentQuiz.length) * 100)}%"></span></div>
-    <h3 class="question-title">${question.question}</h3>
-    <div class="answers">
-      ${question.answers.map((answer, index) => `<button class="answer-button" data-answer="${index}" type="button"><span>${String.fromCharCode(65 + index)}</span>${answer}</button>`).join("")}
+    <div class="quiz-question-layout">
+      <div class="question-main">
+        <div class="question-header">
+          <span class="test-label">FAA Written Test Prep</span>
+          <button class="ghost-button flag-button ${flagged ? "is-active" : ""}" data-flag-question="${question.questionId}" type="button">${flagged ? "Flagged" : "Flag Question"}</button>
+        </div>
+        <h3 class="question-title">${question.question}</h3>
+        <div class="answers">
+          ${question.answers.map((answer, index) => `<button class="answer-button" data-answer="${index}" type="button"><span>${String.fromCharCode(65 + index)}</span>${answer}</button>`).join("")}
+        </div>
+        <div class="quiz-nav-row">
+          <button class="ghost-button" id="prevQuestion" type="button" ${quizIndex === 0 ? "disabled" : ""}>Previous</button>
+          <button class="ghost-button" type="button" disabled>Choose an answer to continue</button>
+        </div>
+      </div>
+      ${renderQuizVisual(question.module)}
     </div>
     <div id="answerFeedback"></div>
   `;
@@ -1322,6 +1537,7 @@ function answerQuestion(answerIndex) {
   const question = currentQuiz[quizIndex];
   const correct = answerIndex === question.correct;
   quizAnswers[quizIndex] = correct;
+  question.selectedAnswer = answerIndex;
   $$(".answer-button").forEach((button) => {
     const index = Number(button.dataset.answer);
     button.disabled = true;
@@ -1332,7 +1548,10 @@ function answerQuestion(answerIndex) {
     <div class="explanation">
       <strong>${correct ? "Correct" : "Review this one"}</strong>
       <p>${question.explanation}</p>
-      <button class="primary-button" id="nextQuestion" type="button">${quizIndex + 1 === currentQuiz.length ? "Finish Test" : "Next Question"}</button>
+      <div class="quiz-nav-row">
+        <button class="ghost-button" id="prevQuestion" type="button" ${quizIndex === 0 ? "disabled" : ""}>Previous</button>
+        <button class="primary-button" id="nextQuestion" type="button">${quizIndex + 1 === currentQuiz.length ? "Finish Test" : "Next Question"}</button>
+      </div>
     </div>
   `;
   recordStudyActivity();
@@ -1350,18 +1569,56 @@ function nextQuestion() {
   const percent = Math.round((correct / currentQuiz.length) * 100);
   const moduleId = $("#quizModule").value;
   const previous = state.quizScores[moduleId]?.percent || 0;
+  const topicStats = currentQuiz.reduce((stats, question, index) => {
+    const topic = question.module;
+    stats[topic] ||= { correct: 0, total: 0 };
+    stats[topic].total += 1;
+    if (quizAnswers[index]) stats[topic].correct += 1;
+    return stats;
+  }, {});
+  const rankedTopics = Object.entries(topicStats)
+    .map(([topic, stats]) => ({ topic, percent: Math.round((stats.correct / stats.total) * 100), ...stats }))
+    .sort((a, b) => b.percent - a.percent);
+  const strongTopics = rankedTopics.filter((topic) => topic.percent >= 80).slice(0, 3);
+  const weakTopics = rankedTopics.filter((topic) => topic.percent < 80).sort((a, b) => a.percent - b.percent).slice(0, 3);
+  const missed = currentQuiz.filter((question, index) => !quizAnswers[index]);
   state.quizScores[moduleId] = { percent: Math.max(previous, percent), last: percent, date: new Date().toISOString() };
   saveState();
   renderDashboard();
 
   $("#quizCard").innerHTML = `
     <div class="score-display score-result">
-      <span class="eyebrow">Score</span>
+      <span class="eyebrow">Test Results</span>
       <div class="score-ring" style="--score: ${percent * 3.6}deg"><strong>${percent}%</strong><span>${correct} / ${currentQuiz.length} correct</span></div>
-      <p>You got ${correct} of ${currentQuiz.length} correct. ${percent >= 80 ? "Solid checkpoint. Keep tying facts to real flying decisions." : "Good rep. Review the explanations and retake this bank."}</p>
-      <button class="primary-button" id="retakeQuiz" type="button">Retake</button>
+      <p>${percent >= 80 ? "Passing checkpoint. Keep reinforcing the explanations." : "Below the FAA written-test target. Review the weak topics and retake this bank."}</p>
+      <div class="results-grid">
+        <section>
+          <h4>Strong topics</h4>
+          <ul>${(strongTopics.length ? strongTopics : rankedTopics.slice(0, 1)).map((item) => `<li>${item.topic}: ${item.percent}%</li>`).join("")}</ul>
+        </section>
+        <section>
+          <h4>Weak topics</h4>
+          <ul>${(weakTopics.length ? weakTopics : [{ topic: "No weak topics in this attempt", percent: percent }]).map((item) => `<li>${item.topic}${item.total ? `: ${item.percent}%` : ""}</li>`).join("")}</ul>
+        </section>
+      </div>
+      <div class="missed-review">
+        <h4>Review missed questions</h4>
+        ${missed.length ? missed.map((question) => `
+          <article>
+            <strong>${question.question}</strong>
+            <p>${question.explanation}</p>
+          </article>
+        `).join("") : "<p>No missed questions on this attempt.</p>"}
+      </div>
+      <button class="primary-button" id="retakeQuiz" type="button">Retake Test</button>
     </div>
   `;
+}
+
+function previousQuestion() {
+  if (quizIndex === 0) return;
+  quizIndex -= 1;
+  renderQuizQuestion();
 }
 
 function renderFlashcards() {
@@ -1395,6 +1652,7 @@ function renderCurrentCard(animationClass = "") {
       <div class="card-side">${module.title} - ${confidence}</div>
       <div class="card-text">${cardFlipped ? card[2] : card[1]}</div>
       <div class="card-hint">${cardFlipped ? "Choose a confidence rating." : "Click the card or press Space to flip."}</div>
+      <div class="flashcard-progress">Card ${currentCardIndex + 1} of ${selectedCardIds.length}</div>
     </div>
   `;
 }
@@ -1402,7 +1660,8 @@ function renderCurrentCard(animationClass = "") {
 function moveCard(direction) {
   if (cardAnimating || !selectedCardIds.length) return;
   cardAnimating = true;
-  $("#studyCard").classList.add(direction > 0 ? "is-sliding-left" : "is-sliding-right");
+  const cardElement = $("#studyCard");
+  cardElement.classList.add(direction > 0 ? "is-sliding-left" : "is-sliding-right");
 
   window.setTimeout(() => {
     currentCardIndex = (currentCardIndex + direction + selectedCardIds.length) % selectedCardIds.length;
@@ -1418,7 +1677,8 @@ function moveCard(direction) {
 function flipCurrentCard() {
   if (cardAnimating) return;
   cardAnimating = true;
-  $("#studyCard").classList.add("is-flipping-out");
+  const cardElement = $("#studyCard");
+  cardElement.classList.add("is-flipping-out");
 
   window.setTimeout(() => {
     cardFlipped = !cardFlipped;
@@ -1600,11 +1860,14 @@ function nextVideoQuestion() {
 
 function sourceUrl(doc, page = 1, file = "") {
   if (file) return file;
-  return doc.file;
+  return `${doc.file}#page=${page}`;
 }
 
 function openSourceDoc(docId, page = 1) {
   const doc = sourceDocs.find((item) => item.id === docId) || sourceDocs[0];
+  const relatedModules = modules
+    .filter((module) => (lessonSourcePlan[module.id] || []).some(([sourceId]) => sourceId === doc.id))
+    .slice(0, 4);
   state.selectedSource = doc.id;
   saveState();
   $("#sourceReaderTitle").textContent = doc.title;
@@ -1613,6 +1876,31 @@ function openSourceDoc(docId, page = 1) {
   $$(".source-card").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.sourceDoc === doc.id);
   });
+  const context = $("#readerContext");
+  if (context) {
+    context.innerHTML = `
+      <div class="reader-context-card">
+        <span class="eyebrow">Related Study</span>
+        <h3>${doc.shortTitle}</h3>
+        <p>${doc.description}</p>
+      </div>
+      <div class="reader-context-card">
+        <h4>Related lessons</h4>
+        <div class="related-lesson-list">
+          ${relatedModules.length ? relatedModules.map((module) => `
+            <button class="text-row-button" data-open-module="${module.id}" type="button">
+              <strong>Week ${module.week}</strong>
+              <span>${module.title}</span>
+            </button>
+          `).join("") : "<p>No linked lessons yet.</p>"}
+        </div>
+      </div>
+      <div class="reader-context-card">
+        <h4>Reader notes</h4>
+        <p>Bookmark important pages in your browser or keep notes beside your flight school's syllabus.</p>
+      </div>
+    `;
+  }
 }
 
 function renderSourceLibrary() {
@@ -1669,10 +1957,12 @@ function exportProgress() {
 }
 
 function resetProgress() {
+  const ok = window.confirm("Reset lesson progress, quiz scores, and flashcard confidence?");
+  if (!ok) return;
   state = { ...defaultState };
   saveState();
   renderAll();
-  showToast("This share build does not save progress.");
+  showToast("Progress reset.");
 }
 
 function renderAll() {
@@ -1694,6 +1984,7 @@ document.addEventListener("click", (event) => {
   const openModule = event.target.closest("[data-open-module]");
   if (openModule) {
     state.selectedModule = openModule.dataset.openModule;
+    state.selectedLessonTab = "overview";
     saveState();
     renderLessons();
     setView("lessons");
@@ -1703,14 +1994,23 @@ document.addEventListener("click", (event) => {
   const moduleButton = event.target.closest("[data-module]");
   if (moduleButton) {
     state.selectedModule = moduleButton.dataset.module;
+    state.selectedLessonTab = "overview";
     saveState();
     renderLessons();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  const lessonTab = event.target.closest("[data-lesson-tab]");
+  if (lessonTab) {
+    state.selectedLessonTab = lessonTab.dataset.lessonTab;
+    saveState();
+    renderLessons();
+  }
+
   const lessonVideoButton = event.target.closest("[data-lesson-video]");
   if (lessonVideoButton) {
     setLessonVideo(state.selectedModule, lessonVideoButton.dataset.lessonVideo);
+    state.selectedLessonTab = "watch";
     currentVideoQuiz = [];
     videoQuizIndex = 0;
     videoQuizAnswers = [];
@@ -1801,7 +2101,27 @@ document.addEventListener("click", (event) => {
     startQuiz();
   }
 
+  const revealHint = event.target.closest("[data-reveal-hint]");
+  if (revealHint) {
+    const panel = revealHint.closest(".quiz-visual-panel");
+    panel?.classList.add("is-revealed");
+    revealHint.textContent = "Hint shown";
+  }
+
   if (event.target.id === "startQuiz" || event.target.id === "startQuizInline" || event.target.id === "retakeQuiz") startQuiz();
+
+  const flagButton = event.target.closest("[data-flag-question]");
+  if (flagButton) {
+    const id = flagButton.dataset.flagQuestion;
+    state.flaggedQuestions = { ...(state.flaggedQuestions || {}) };
+    if (state.flaggedQuestions[id]) {
+      delete state.flaggedQuestions[id];
+    } else {
+      state.flaggedQuestions[id] = true;
+    }
+    saveState();
+    renderQuizQuestion();
+  }
 
   const answer = event.target.closest("[data-answer]");
   if (answer && currentQuiz.length) answerQuestion(Number(answer.dataset.answer));
@@ -1809,6 +2129,7 @@ document.addEventListener("click", (event) => {
   const videoAnswer = event.target.closest("[data-video-answer]");
   if (videoAnswer && currentVideoQuiz.length) answerVideoQuestion(Number(videoAnswer.dataset.videoAnswer));
 
+  if (event.target.id === "prevQuestion") previousQuestion();
   if (event.target.id === "nextQuestion") nextQuestion();
   if (event.target.id === "nextVideoQuestion") nextVideoQuestion();
   if (event.target.id === "prevCard") moveCard(-1);
@@ -1824,6 +2145,7 @@ document.addEventListener("click", (event) => {
 $("#quizModule").addEventListener("change", (event) => {
   state.selectedModule = event.target.value === "all" ? state.selectedModule : event.target.value;
   saveState();
+  if (!currentQuiz.length) renderQuizIntro();
 });
 
 $("#deckSelect").addEventListener("change", (event) => {
