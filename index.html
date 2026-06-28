@@ -12,8 +12,8 @@
         <div class="brand">
           <div class="brand-mark" aria-hidden="true">A</div>
           <div>
-            <h1>FlightDeck</h1>
-            <p>Study</p>
+            <h1>PPL</h1>
+            <p>Study Deck</p>
           </div>
         </div>
 
@@ -202,6 +202,22 @@
         </section>
 
         <section class="view" id="resourcesView" aria-labelledby="viewTitle">
+          <div class="resource-toolbar">
+            <div>
+              <span class="eyebrow">FAA Resources</span>
+              <h3>Study library</h3>
+            </div>
+            <label class="resource-search">
+              <span>Search resources</span>
+              <input id="resourceSearch" type="search" placeholder="Search resources...">
+            </label>
+            <div class="filter-pills" aria-label="Resource filters">
+              <button class="filter-pill is-active" data-resource-filter="all" type="button">All</button>
+              <button class="filter-pill" data-resource-filter="handbooks" type="button">Handbooks</button>
+              <button class="filter-pill" data-resource-filter="regulations" type="button">Regulations</button>
+              <button class="filter-pill" data-resource-filter="charts" type="button">Charts</button>
+            </div>
+          </div>
           <div class="source-reader-shell">
             <aside class="source-list" id="sourceList" aria-label="FAA handbook sources"></aside>
             <article class="source-reader">
@@ -224,7 +240,15 @@
       </main>
     </div>
 
+    <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+      <button class="mobile-nav-button is-active" data-view="dashboard" type="button"><span aria-hidden="true">D</span>Home</button>
+      <button class="mobile-nav-button" data-view="lessons" type="button"><span aria-hidden="true">L</span>Lessons</button>
+      <button class="mobile-nav-button" data-view="flashcards" type="button"><span aria-hidden="true">F</span>Cards</button>
+      <button class="mobile-nav-button" data-view="quiz" type="button"><span aria-hidden="true">Q</span>Practice</button>
+      <button class="mobile-nav-button" data-view="resources" type="button"><span aria-hidden="true">M</span>More</button>
+    </nav>
+
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="app.js?v=20260627-restore-video-soft-cards"></script>
+    <script src="app.js?v=20260628-flightdeck-polish"></script>
   </body>
 </html>

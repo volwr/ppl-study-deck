@@ -1035,6 +1035,8 @@ let selectedCardIds = [];
 let currentCardIndex = 0;
 let cardFlipped = false;
 let cardAnimating = false;
+let resourceSearchTerm = "";
+let activeResourceFilter = "all";
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -1102,6 +1104,7 @@ function showToast(message) {
 
 function setView(view) {
   $$(".nav-button").forEach((button) => button.classList.toggle("is-active", button.dataset.view === view));
+  $$(".mobile-nav-button").forEach((button) => button.classList.toggle("is-active", button.dataset.view === view));
   $$(".view").forEach((section) => section.classList.remove("is-active"));
   $(`#${view}View`).classList.add("is-active");
   $("#viewTitle").textContent = {
@@ -1204,10 +1207,18 @@ function renderDashboard() {
 function renderLessons() {
   $("#moduleList").innerHTML = modules.map((module) => {
     const isDone = progressFor(module);
+    const isActive = state.selectedModule === module.id;
+    const rows = module.know.slice(0, 5).map((item, index) => {
+      const rowState = isDone ? "is-complete" : isActive && index === 2 ? "is-current" : index > 2 ? "is-locked" : "";
+      const marker = isDone ? "OK" : index > 2 ? "--" : "O";
+      return `<span class="module-lesson-row ${rowState}"><b>${marker}</b>${item}</span>`;
+    }).join("");
     return `
-      <button class="module-button ${state.selectedModule === module.id ? "is-active" : ""}" data-module="${module.id}" type="button">
+      <button class="module-button ${isActive ? "is-active" : ""}" data-module="${module.id}" type="button">
         <strong>Week ${module.week}: ${module.title}</strong>
-        <span>${isDone ? "Complete" : "Not complete"} - ${module.know.length} knowledge targets</span>
+        <span>${isDone ? "Complete" : isActive ? "Current module" : "Course path"} - ${module.know.length} targets</span>
+        <em class="module-meta">${12 + module.week * 3} min lesson - ${module.week + 8} cards - ${module.week + 4} questions</em>
+        <span class="module-lesson-list">${rows}</span>
       </button>
     `;
   }).join("");
@@ -1458,14 +1469,17 @@ function renderQuizIntro() {
   const selectedId = $("#quizModule").value === "all" ? state.selectedModule || "orientation" : $("#quizModule").value;
   $("#quizCard").innerHTML = `
     <div class="quiz-start-layout">
-      <div class="score-display">
-        <span class="eyebrow">Knowledge check</span>
-        <h3>Pick a question bank and start a short test.</h3>
-        <p>Each module has checkpoint questions. Explanations appear after each answer so the quiz teaches as it grades.</p>
-        <div class="quiz-start-actions">
-          <button class="primary-button" id="startQuizInline" type="button">Start Test</button>
-          <span>10 module questions or 20 mixed questions</span>
+      <div class="practice-menu">
+        <span class="eyebrow">Practice Test</span>
+        <h3>Choose your test mode</h3>
+        <div class="practice-option-grid">
+          <button class="practice-option" id="startQuizInline" type="button"><span>10</span><strong>Quick 10 Questions</strong><em>Short focused practice</em></button>
+          <button class="practice-option" data-start-quiz type="button"><span>WA</span><strong>Weak Areas Only</strong><em>Focus on what you need</em></button>
+          <button class="practice-option" data-start-quiz type="button"><span>SIM</span><strong>Full Written Sim</strong><em>Simulate the real test</em></button>
+          <button class="practice-option" data-start-quiz type="button"><span>MISS</span><strong>Missed Questions</strong><em>Review mistakes</em></button>
+          <button class="practice-option" data-start-quiz type="button"><span>ACS</span><strong>ACS Oral Review</strong><em>Prepare for your checkride</em></button>
         </div>
+        <p class="practice-note">Current bank: ${$("#quizModule").selectedOptions[0]?.textContent || "Selected module"}</p>
       </div>
       ${renderQuizVisual(selectedId, true)}
     </div>
@@ -1627,6 +1641,13 @@ function renderFlashcards() {
     .join("");
   $("#deckSelect").value = state.selectedDeck || "all";
   buildCardDeck();
+  const selectedModule = modules.find((item) => item.id === state.selectedDeck);
+  const deckLabel = state.selectedDeck === "all" ? "All decks" : selectedModule?.title || "Selected deck";
+  const toolbar = document.querySelector(".flashcard-toolbar");
+  if (toolbar) {
+    toolbar.dataset.deck = deckLabel;
+    toolbar.dataset.count = `${Math.min(currentCardIndex + 1, selectedCardIds.length)} / ${selectedCardIds.length || 0}`;
+  }
   renderCurrentCard();
 }
 
@@ -1645,13 +1666,15 @@ function renderCurrentCard(animationClass = "") {
   const module = modules.find((item) => item.id === card[0]);
   const confidence = state.cardConfidence[cardId] || "new";
   const cardElement = $("#studyCard");
+  const toolbar = document.querySelector(".flashcard-toolbar");
+  if (toolbar) toolbar.dataset.count = `${currentCardIndex + 1} / ${selectedCardIds.length}`;
 
   cardElement.className = `study-card ${cardFlipped ? "is-flipped" : ""} ${animationClass}`.trim();
   cardElement.innerHTML = `
     <div class="card-inner">
       <div class="card-side">${module.title} - ${confidence}</div>
       <div class="card-text">${cardFlipped ? card[2] : card[1]}</div>
-      <div class="card-hint">${cardFlipped ? "Choose a confidence rating." : "Click the card or press Space to flip."}</div>
+      <div class="card-hint">${cardFlipped ? "Choose a confidence rating." : "Tap, click, or press Space to reveal."}</div>
       <div class="flashcard-progress">Card ${currentCardIndex + 1} of ${selectedCardIds.length}</div>
     </div>
   `;
@@ -1904,33 +1927,57 @@ function openSourceDoc(docId, page = 1) {
 }
 
 function renderSourceLibrary() {
+  const query = resourceSearchTerm.toLowerCase();
+  const visibleDocs = sourceDocs.filter((doc) => {
+    const filterMatch = activeResourceFilter === "all" || activeResourceFilter === "handbooks";
+    const searchMatch = !query || `${doc.title} ${doc.description} ${doc.shortTitle}`.toLowerCase().includes(query);
+    return filterMatch && searchMatch;
+  });
   $("#sourceList").innerHTML = `
     <div class="course-list-header">
-      <span class="eyebrow">FAA PDFs</span>
+      <span class="eyebrow">FAA Resources</span>
       <strong>Handbook library</strong>
-      <p>${sourceDocs.length} sources available in the reader</p>
+      <p>${visibleDocs.length} matching sources</p>
     </div>
-    ${sourceDocs.map((doc) => `
+    ${visibleDocs.length ? visibleDocs.map((doc) => `
       <button class="source-card ${state.selectedSource === doc.id ? "is-active" : ""}" data-source-doc="${doc.id}" data-source-page="1" type="button">
+        <span class="resource-thumb">${doc.shortTitle}</span>
         <span class="source-badge">${doc.shortTitle}</span>
         <strong>${doc.title}</strong>
         <em>${doc.description}</em>
       </button>
-    `).join("")}
+    `).join("") : `<div class="empty-resource-card"><strong>No in-app PDFs match this filter.</strong><p>Try All or Handbooks, or use the additional FAA links below.</p></div>`}
   `;
   openSourceDoc(state.selectedSource || sourceDocs[0].id, 1);
 }
 
 function renderResources() {
   renderSourceLibrary();
-  $("#resourceGrid").innerHTML = resources.map(([title, description, href]) => `
+  const categoryFor = (title, description) => {
+    const text = `${title} ${description}`.toLowerCase();
+    if (/chart|skyvector/.test(text)) return "charts";
+    if (/acs|aim|certificate|student|become/.test(text)) return "regulations";
+    if (/handbook|manual|textbook/.test(text)) return "handbooks";
+    return "all";
+  };
+  const filteredResources = resources.filter(([title, description]) => {
+    const category = categoryFor(title, description);
+    const filterMatch = activeResourceFilter === "all" || category === activeResourceFilter;
+    const searchMatch = !resourceSearchTerm || `${title} ${description}`.toLowerCase().includes(resourceSearchTerm.toLowerCase());
+    return filterMatch && searchMatch;
+  });
+  $$(".filter-pill").forEach((button) => button.classList.toggle("is-active", button.dataset.resourceFilter === activeResourceFilter));
+  const search = $("#resourceSearch");
+  if (search && search.value !== resourceSearchTerm) search.value = resourceSearchTerm;
+  $("#resourceGrid").innerHTML = filteredResources.map(([title, description, href]) => `
     <article class="resource-card">
+      <span class="resource-thumb">${title.split(" ").map((word) => word[0]).join("").slice(0, 3)}</span>
       <span class="eyebrow">Free resource</span>
       <h3>${title}</h3>
       <p>${description}</p>
       <a class="resource-link" href="${href}" target="_blank" rel="noreferrer">Open</a>
     </article>
-  `).join("");
+  `).join("") || `<article class="resource-card empty-resource-card"><h3>No resources found</h3><p>Try a broader search or switch back to All.</p></article>`;
 }
 
 function exportProgress() {
@@ -2039,6 +2086,12 @@ document.addEventListener("click", (event) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  const resourceFilter = event.target.closest("[data-resource-filter]");
+  if (resourceFilter) {
+    activeResourceFilter = resourceFilter.dataset.resourceFilter || "all";
+    renderResources();
+  }
+
   const lessonSourceButton = event.target.closest("[data-lesson-source-doc]");
   if (lessonSourceButton) {
     const docId = lessonSourceButton.dataset.lessonSourceDoc;
@@ -2108,7 +2161,7 @@ document.addEventListener("click", (event) => {
     revealHint.textContent = "Hint shown";
   }
 
-  if (event.target.id === "startQuiz" || event.target.id === "startQuizInline" || event.target.id === "retakeQuiz") startQuiz();
+  if (event.target.id === "startQuiz" || event.target.id === "startQuizInline" || event.target.id === "retakeQuiz" || event.target.closest("[data-start-quiz]")) startQuiz();
 
   const flagButton = event.target.closest("[data-flag-question]");
   if (flagButton) {
@@ -2168,6 +2221,11 @@ $("#studyCard").addEventListener("keydown", (event) => {
     event.preventDefault();
     flipCurrentCard();
   }
+});
+
+$("#resourceSearch")?.addEventListener("input", (event) => {
+  resourceSearchTerm = event.target.value.trim();
+  renderResources();
 });
 
 $("#exportProgress").addEventListener("click", exportProgress);

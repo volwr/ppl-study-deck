@@ -893,6 +893,540 @@ select {
   .course-select { width: 100%; }
 }
 
+/* 2026-06 polish pass: clean aviation tablet UI, using assets/images hooks when provided. */
+:root {
+  --bg: #0a1423;
+  --surface: #111c2e;
+  --surface-subtle: #162438;
+  --surface-2: #162438;
+  --border: rgba(148, 163, 184, 0.16);
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --primary: #3b82f6;
+  --primary-dark: #2563eb;
+  --cyan: #22d3ee;
+  --green: #22c55e;
+  --amber: #f59e0b;
+  --purple: #a855f7;
+  --danger: #ef4444;
+}
+
+body {
+  background:
+    linear-gradient(rgba(10, 20, 35, 0.96), rgba(10, 20, 35, 0.96)),
+    url("assets/images/cockpit-bg.jpg"),
+    #0a1423;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+.main {
+  max-width: 1480px;
+  width: 100%;
+}
+
+.brand-mark,
+.course-icon,
+.profile-avatar,
+.tile-icon,
+.quick-card > span,
+.weather-icon,
+.resource-thumb {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+.sidebar {
+  background: rgba(7, 17, 31, 0.92);
+}
+
+.brand h1 {
+  font-size: 1.05rem;
+}
+
+.brand p {
+  font-size: 0.74rem;
+}
+
+.nav-button,
+.mobile-nav-button {
+  position: relative;
+}
+
+.nav-button span,
+.mobile-nav-button span {
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 6px;
+  background: rgba(15, 29, 49, 0.78);
+  color: #60a5fa;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.topbar {
+  min-height: 58px;
+}
+
+.topbar h2 {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.streak-pill > span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.continue-card {
+  min-height: 176px;
+  background:
+    linear-gradient(90deg, rgba(10, 20, 35, 0.96) 0%, rgba(10, 20, 35, 0.76) 48%, rgba(10, 20, 35, 0.46) 100%),
+    url("assets/images/hero-bg.jpg"),
+    linear-gradient(135deg, #15243b, #263f63 52%, #7b8190);
+  background-size: cover;
+  background-position: center;
+}
+
+.continue-card::before {
+  opacity: 0.56;
+}
+
+.continue-content {
+  padding: 28px;
+}
+
+.continue-content h3 {
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+
+.continue-content p,
+.practice-note {
+  color: #b7c4d8;
+}
+
+.continue-actions {
+  margin-left: clamp(220px, 38vw, 520px);
+}
+
+.dashboard-two {
+  grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+  gap: 16px;
+}
+
+.panel,
+.next-up-card,
+.continue-card,
+.course-card,
+.sidebar-profile,
+.sidebar-tools,
+.flashcard-toolbar,
+.quiz-controls,
+.resource-toolbar {
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.22);
+}
+
+.panel,
+.plan-tile,
+.quick-card,
+.weak-area-card,
+.next-up-card,
+.module-button,
+.resource-card,
+.source-card,
+.practice-option {
+  border-color: rgba(148, 163, 184, 0.16);
+}
+
+.panel {
+  padding: 18px;
+}
+
+.plan-cards {
+  gap: 12px;
+}
+
+.plan-tile {
+  min-height: 166px;
+  padding: 18px 12px 14px;
+}
+
+.tile-icon,
+.quick-card > span,
+.weather-icon {
+  width: 44px;
+  height: 44px;
+  font-size: 1rem;
+}
+
+.daily-goal {
+  grid-template-columns: minmax(140px, auto) minmax(140px, 1fr) auto;
+  font-size: 0.9rem;
+}
+
+.progress-list {
+  gap: 14px;
+}
+
+.weak-area-card {
+  min-height: 88px;
+}
+
+.quick-access-grid {
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.quick-card {
+  min-height: 94px;
+  padding: 14px;
+}
+
+.quick-card em {
+  font-size: 0.78rem;
+}
+
+.next-up-card {
+  min-height: 82px;
+}
+
+.route-panel {
+  display: none;
+}
+
+.lesson-layout {
+  grid-template-columns: minmax(280px, 390px) minmax(0, 1fr);
+}
+
+.module-button {
+  padding: 16px;
+}
+
+.module-meta {
+  display: block;
+  margin-top: 8px;
+  color: #7dd3fc;
+  font-size: 0.78rem;
+  font-style: normal;
+}
+
+.module-lesson-list {
+  display: grid;
+  gap: 7px;
+  margin-top: 14px;
+}
+
+.module-lesson-row {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  align-items: center;
+  gap: 8px;
+  color: #aebbd0;
+  font-size: 0.82rem;
+}
+
+.module-lesson-row b {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 50%;
+  color: #60a5fa;
+  font-size: 0.55rem;
+}
+
+.module-lesson-row.is-complete b {
+  border-color: rgba(34, 197, 94, 0.42);
+  color: #86efac;
+}
+
+.module-lesson-row.is-current {
+  color: #f8fafc;
+}
+
+.module-lesson-row.is-current b {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.module-lesson-row.is-locked {
+  opacity: 0.52;
+}
+
+.flashcard-toolbar {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 14px;
+}
+
+.flashcard-toolbar::before {
+  content: "Flashcards";
+  display: block;
+  color: #f8fafc;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.flashcard-toolbar::after {
+  content: attr(data-deck) "  " attr(data-count);
+  grid-column: 1 / -1;
+  color: #94a3b8;
+  font-size: 0.86rem;
+}
+
+.study-card {
+  min-height: min(54vh, 500px);
+  background:
+    linear-gradient(rgba(17, 28, 46, 0.92), rgba(17, 28, 46, 0.92)),
+    url("assets/images/clouds.jpg"),
+    #111c2e;
+  background-size: cover;
+  background-position: center;
+}
+
+.card-text {
+  max-width: 640px;
+  font-size: clamp(1.6rem, 4vw, 2.45rem);
+}
+
+.confidence-row .danger-button {
+  color: #fca5a5;
+}
+
+.confidence-row [data-confidence="hard"] {
+  border-color: rgba(245, 158, 11, 0.42);
+  color: #fbbf24;
+}
+
+.confidence-row [data-confidence="good"] {
+  border-color: rgba(34, 197, 94, 0.42);
+  color: #86efac;
+}
+
+.practice-menu {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(17, 28, 46, 0.86);
+  padding: 22px;
+}
+
+.practice-option-grid {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.practice-option {
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  gap: 12px;
+  align-items: center;
+  min-height: 76px;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(22, 36, 56, 0.76);
+  color: #f8fafc;
+  padding: 14px;
+  text-align: left;
+}
+
+.practice-option span {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 9px;
+  background: rgba(59, 130, 246, 0.13);
+  color: #60a5fa;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.practice-option strong,
+.practice-option em {
+  display: block;
+  font-style: normal;
+}
+
+.practice-option em {
+  grid-column: 2;
+  color: #94a3b8;
+  font-size: 0.84rem;
+}
+
+.resource-toolbar {
+  display: grid;
+  grid-template-columns: 1fr minmax(240px, 420px);
+  gap: 14px;
+  align-items: end;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(17, 28, 46, 0.86);
+  padding: 18px;
+}
+
+.resource-toolbar h3 {
+  margin: 4px 0 0;
+}
+
+.resource-search {
+  display: grid;
+  gap: 6px;
+}
+
+.resource-search span {
+  color: #94a3b8;
+  font-size: 0.78rem;
+}
+
+.resource-search input {
+  min-height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: rgba(10, 20, 35, 0.82);
+  color: #f8fafc;
+  padding: 0 12px;
+}
+
+.filter-pills {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-pill {
+  min-height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(22, 36, 56, 0.72);
+  color: #94a3b8;
+  padding: 0 14px;
+}
+
+.filter-pill.is-active {
+  border-color: rgba(59, 130, 246, 0.58);
+  background: rgba(59, 130, 246, 0.18);
+  color: #bfdbfe;
+}
+
+.resource-card,
+.source-card {
+  position: relative;
+  padding-left: 78px;
+}
+
+.resource-thumb {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  border-radius: 8px;
+  background:
+    linear-gradient(rgba(30, 64, 105, 0.82), rgba(17, 28, 46, 0.92)),
+    url("assets/images/clouds.jpg"),
+    #162438;
+  background-size: cover;
+  color: #bfdbfe;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.empty-resource-card {
+  padding: 18px;
+}
+
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 1020px) {
+  .continue-actions {
+    margin-left: 0;
+  }
+
+  .lesson-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  body {
+    padding-bottom: 76px;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .mobile-bottom-nav {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 40;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    border-top: 1px solid var(--border);
+    background: rgba(7, 17, 31, 0.96);
+    backdrop-filter: blur(16px);
+    padding: 8px 8px 10px;
+  }
+
+  .mobile-nav-button {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    min-height: 52px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 0.72rem;
+  }
+
+  .mobile-nav-button span {
+    width: 24px;
+    height: 24px;
+  }
+
+  .mobile-nav-button.is-active {
+    background: rgba(59, 130, 246, 0.14);
+    color: #bfdbfe;
+  }
+
+  .dashboard-two,
+  .resource-toolbar,
+  .flashcard-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .continue-card {
+    min-height: 240px;
+  }
+
+  .plan-tile,
+  .quick-card {
+    min-height: auto;
+  }
+
+  .source-reader-shell {
+    display: grid;
+  }
+
+  .source-reader {
+    order: 2;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
