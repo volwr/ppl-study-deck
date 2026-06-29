@@ -836,6 +836,231 @@ select {
   font-size: clamp(1.45rem, 3vw, 2.35rem);
 }
 
+/* Final layout authority: keep dashboard text inside its boxes. */
+.sidebar-tools,
+.route-panel {
+  display: none !important;
+}
+
+.app-shell,
+.main,
+.view,
+.panel,
+.continue-card,
+.plan-tile,
+.quick-card,
+.weak-area-card,
+.next-up-card,
+.lesson-detail,
+.module-list,
+.quiz-card,
+.study-card,
+.source-reader-shell {
+  min-width: 0;
+}
+
+.main {
+  max-width: 1560px;
+}
+
+.topbar p {
+  color: var(--muted);
+}
+
+.nav-button span,
+.mobile-nav-button span,
+.tile-icon,
+.quick-card > span,
+.weather-icon,
+.course-icon,
+.brand-mark {
+  flex: 0 0 auto;
+  overflow: hidden;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.nav-button span,
+.mobile-nav-button span {
+  font-size: 0.62rem;
+}
+
+.continue-card {
+  min-height: 300px;
+  align-content: end;
+}
+
+.continue-content {
+  width: min(720px, 100%);
+  max-width: none;
+}
+
+.continue-content h3,
+.continue-content p,
+.next-up-card h3,
+.next-up-card p,
+.quick-card strong,
+.quick-card em,
+.plan-tile strong,
+.plan-tile span,
+.weak-area-card strong,
+.weak-area-card em,
+.progress-list span {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.continue-actions {
+  margin-left: 0 !important;
+}
+
+.continue-actions,
+.button-row,
+.quiz-nav-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.continue-actions > button,
+.plan-tile button,
+.button-row > button {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.dashboard-two {
+  grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
+}
+
+.plan-cards {
+  grid-template-columns: repeat(3, minmax(170px, 1fr));
+}
+
+.plan-tile {
+  min-height: 205px;
+  align-content: center;
+}
+
+.plan-tile strong {
+  font-size: clamp(1rem, 1.45vw, 1.28rem);
+  line-height: 1.2;
+}
+
+.plan-tile span {
+  line-height: 1.35;
+}
+
+.progress-list > div {
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 220px) auto;
+}
+
+.quick-access-grid {
+  grid-template-columns: repeat(5, minmax(180px, 1fr));
+}
+
+.quick-card {
+  grid-template-columns: 58px minmax(0, 1fr) 18px;
+  align-items: center;
+  min-height: 124px;
+  padding: 18px;
+}
+
+.quick-card > span {
+  width: 58px;
+  height: 58px;
+  font-size: 0.72rem;
+}
+
+.quick-card strong {
+  font-size: clamp(0.98rem, 1.25vw, 1.16rem);
+  line-height: 1.2;
+}
+
+.quick-card em {
+  font-size: 0.86rem;
+  line-height: 1.25;
+}
+
+.quick-card b,
+.weak-area-card b {
+  justify-self: end;
+  color: var(--muted-2);
+  font-size: 0.95rem;
+}
+
+.weak-area-card {
+  grid-template-columns: 64px minmax(0, 1fr) 18px;
+}
+
+.practice-option {
+  grid-template-columns: 52px minmax(0, 1fr);
+}
+
+.practice-option span {
+  font-size: 0.68rem;
+}
+
+.source-card,
+.resource-card {
+  min-width: 0;
+}
+
+.card-text {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1340px) {
+  .dashboard-two {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-access-grid {
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 1120px) {
+  .plan-cards,
+  .quick-access-grid {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .app-shell {
+    display: block;
+  }
+
+  .sidebar {
+    display: none !important;
+  }
+
+  .mobile-bottom-nav {
+    display: grid !important;
+  }
+}
+
+@media (max-width: 680px) {
+  .plan-cards,
+  .quick-access-grid,
+  .progress-list > div,
+  .quick-card,
+  .weak-area-card,
+  .next-up-card,
+  .daily-goal {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-card,
+  .weak-area-card {
+    justify-items: start;
+  }
+}
+
 .card-nav {
   border-color: var(--border);
   background: rgba(15, 29, 49, 0.78);

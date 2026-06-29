@@ -337,7 +337,6 @@ const resources = [
   ["FAA VFR Charts", "Free sectional and terminal area chart downloads.", "https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/vfr/"],
   ["FAASTeam", "Free FAA safety courses and webinars.", "https://www.faasafety.gov/"],
   ["SkyVector", "Free online chart and route planning practice.", "https://skyvector.com/"],
-  ["Quizlet Search", "Use for extra flashcards, but verify against FAA sources.", "https://quizlet.com/search?query=private%20pilot%20ground%20school&type=sets"],
   ["Cyndy Hollman Videos", "Beginner-friendly free ground school videos.", "https://www.youtube.com/results?search_query=Cyndy+Hollman+private+pilot+ground+school"],
   ["FlightInsight Videos", "Helpful visual explanations of PPL topics.", "https://www.youtube.com/results?search_query=FlightInsight+private+pilot"]
 ];
@@ -1335,6 +1334,8 @@ const defaultState = {
   selectedLessonVideos: {},
   selectedLessonTab: "overview",
   selectedSource: "phak",
+  selectedDayByModule: {},
+  selectedCardMode: "all",
   seenVideoQuestions: {},
   videoScores: {},
   flaggedQuestions: {},
@@ -1572,6 +1573,11 @@ function renderDashboard() {
     nextUpButton.dataset.openModule = next.id;
     delete nextUpButton.dataset.jump;
   }
+  const todayLessonButton = document.querySelector("#todayLessonButton");
+  if (todayLessonButton) {
+    todayLessonButton.dataset.openModule = next.id;
+    delete todayLessonButton.dataset.jump;
+  }
 
   const timeline = $("#dashboardTimeline");
   if (timeline) timeline.innerHTML = modules.map((module) => {
@@ -1634,7 +1640,10 @@ function renderLessons() {
   const module = modules.find((item) => item.id === state.selectedModule) || modules[0];
   const isDone = progressFor(module);
   const moduleDays = daysForModule(module.id);
-  const activeDay = moduleDays.find((day) => !isDayComplete(day.id)) || moduleDays[moduleDays.length - 1];
+  const selectedDayId = state.selectedDayByModule?.[module.id];
+  const activeDay = moduleDays.find((day) => day.id === selectedDayId)
+    || moduleDays.find((day) => !isDayComplete(day.id))
+    || moduleDays[moduleDays.length - 1];
   const reading = lessonReadings[module.id];
   const notes = lessonNotes[module.id];
   const videoSources = videoSourcesFor(module);
@@ -1781,7 +1790,6 @@ function renderLessons() {
           <h4>Related links</h4>
           <div class="resource-links">
             ${module.links.map(([label, href]) => `<a class="resource-link" href="${href}" target="_blank" rel="noreferrer">${label}</a>`).join("")}
-            <a class="resource-link" href="https://quizlet.com/search?query=private%20pilot%20${encodeURIComponent(module.title)}&type=sets" target="_blank" rel="noreferrer">Quizlet Search</a>
           </div>
         </div>
       </section>
@@ -2120,8 +2128,22 @@ function renderFlashcards() {
 function buildCardDeck() {
   selectedCardIds = flashcards
     .map((card, index) => ({ card, index }))
-    .filter(({ card }) => state.selectedDeck === "all" || card[0] === state.selectedDeck)
+    .filter(({ card, index }) => {
+      const deckMatch = state.selectedDeck === "all" || card[0] === state.selectedDeck;
+      if (!deckMatch) return false;
+      if (state.selectedCardMode === "due") return isCardDue(index);
+      if (state.selectedCardMode === "weak") return ["again", "hard"].includes(state.cardConfidence?.[index]);
+      if (state.selectedCardMode === "current") return card[0] === nextStudyDay().moduleId;
+      return true;
+    })
     .map(({ index }) => index);
+  if (!selectedCardIds.length) {
+    selectedCardIds = flashcards
+      .map((card, index) => ({ card, index }))
+      .filter(({ card }) => state.selectedDeck === "all" || card[0] === state.selectedDeck)
+      .map(({ index }) => index);
+    if (state.selectedCardMode !== "all") showToast("No cards are due in that mode, so all matching cards are shown.");
+  }
   currentCardIndex = Math.min(currentCardIndex, Math.max(0, selectedCardIds.length - 1));
   cardFlipped = false;
 }
@@ -2641,6 +2663,7 @@ document.addEventListener("click", (event) => {
     const day = courseDays.find((item) => item.id === setDayButton.dataset.setDay);
     if (day) {
       state.selectedModule = day.moduleId;
+      state.selectedDayByModule = { ...(state.selectedDayByModule || {}), [day.moduleId]: day.id };
       state.selectedLessonTab = day.isQuiz ? "practice" : "learn";
       saveState();
       renderLessons();
@@ -2739,7 +2762,11 @@ document.addEventListener("click", (event) => {
 
   if (event.target.id === "toggleLesson") {
     const module = currentModule();
-    const activeDay = daysForModule(module.id).find((day) => !isDayComplete(day.id)) || daysForModule(module.id).at(-1);
+    const moduleDays = daysForModule(module.id);
+    const selectedDayId = state.selectedDayByModule?.[module.id];
+    const activeDay = moduleDays.find((day) => day.id === selectedDayId)
+      || moduleDays.find((day) => !isDayComplete(day.id))
+      || moduleDays.at(-1);
     const id = activeDay.id;
     state.completedDays = isDayComplete(id)
       ? completedDayIds().filter((item) => item !== id)
@@ -2781,7 +2808,9 @@ document.addEventListener("click", (event) => {
 
   const flashMode = event.target.closest("[data-flash-mode]");
   if (flashMode) {
-    state.selectedDeck = flashMode.dataset.flashMode === "module" ? state.selectedModule : "all";
+    const mode = flashMode.dataset.flashMode || "all";
+    state.selectedCardMode = mode;
+    state.selectedDeck = mode === "module" ? state.selectedModule : mode === "current" ? nextStudyDay().moduleId : "all";
     currentCardIndex = 0;
     saveState();
     renderFlashcards();
@@ -2856,8 +2885,8 @@ $("#resourceSearch")?.addEventListener("input", (event) => {
   renderResources();
 });
 
-$("#exportProgress").addEventListener("click", exportProgress);
-$("#resetProgress").addEventListener("click", resetProgress);
+$("#exportProgress")?.addEventListener("click", exportProgress);
+$("#resetProgress")?.addEventListener("click", resetProgress);
 
 document.addEventListener("change", (event) => {
   if (event.target.id === "settingImmediateExplanations") {
