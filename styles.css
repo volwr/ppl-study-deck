@@ -893,6 +893,518 @@ select {
   .course-select { width: 100%; }
 }
 
+/* Layout authority for the cleaned app shell. */
+.route-panel,
+.sidebar-tools {
+  display: none !important;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.continue-actions {
+  margin-left: 0 !important;
+}
+
+.quick-access-grid {
+  grid-template-columns: repeat(5, minmax(150px, 1fr));
+}
+
+.day-strip,
+.progress-grid,
+.settings-grid,
+.practice-option-grid,
+.topic-list,
+.result-list {
+  min-width: 0;
+}
+
+.day-strip {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.progress-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.settings-grid,
+.progress-action-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.settings-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 900px) {
+  .app-shell {
+    display: block;
+  }
+
+  .sidebar {
+    display: none !important;
+  }
+
+  .mobile-bottom-nav {
+    display: grid;
+  }
+
+  .main {
+    padding-bottom: 92px;
+  }
+
+  .quiz-start-layout,
+  .quiz-question-layout,
+  .lesson-layout,
+  .source-reader-shell {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .topbar-actions,
+  .plan-cards,
+  .quick-access-grid,
+  .progress-grid,
+  .settings-grid,
+  .practice-option-grid,
+  .day-strip {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Final cleanup pass: readable, study-first app shell. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 0;
+}
+
+body,
+button,
+input,
+select {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+a,
+select,
+input {
+  min-width: 0;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+:focus-visible {
+  outline: 3px solid rgba(34, 211, 238, 0.75);
+  outline-offset: 3px;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.brand-mark,
+.course-icon {
+  border-radius: 12px;
+  font-size: 1.35rem;
+}
+
+.brand-mark::before {
+  content: "✈";
+}
+
+.brand-mark {
+  font-size: 0;
+}
+
+.brand h1::after {
+  content: " FlightDeck";
+  text-transform: none;
+}
+
+.nav-button span,
+.mobile-nav-button span,
+.tile-icon,
+.quick-card > span {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.sidebar-tools {
+  display: none;
+}
+
+.main {
+  margin: 0 auto;
+  min-width: 0;
+}
+
+.view {
+  min-width: 0;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.topbar h2 {
+  font-size: clamp(1.45rem, 3vw, 2rem);
+}
+
+.continue-card::before,
+.hero-plane {
+  display: none;
+}
+
+.continue-card {
+  min-height: 230px;
+  align-content: end;
+}
+
+.continue-content {
+  max-width: 760px;
+}
+
+.continue-actions {
+  margin-left: 0;
+}
+
+.plan-tile,
+.quick-card,
+.practice-option,
+.answer-button,
+.module-button,
+.day-chip,
+.course-choice,
+.text-row-button,
+.topic-row,
+.result-row {
+  overflow-wrap: anywhere;
+}
+
+.plan-tile .ghost-button,
+.plan-tile .success-button,
+.plan-tile .purple-button,
+.continue-actions > button,
+.button-row > button {
+  min-height: 42px;
+  width: 100%;
+  justify-content: center;
+}
+
+.quick-access-grid {
+  grid-template-columns: repeat(5, minmax(150px, 1fr));
+}
+
+.quick-card {
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+}
+
+.route-panel {
+  display: none !important;
+}
+
+.lesson-layout {
+  align-items: start;
+}
+
+.lesson-detail,
+.module-list,
+.quiz-shell,
+.flashcard-stage,
+.source-reader-shell,
+.progress-page,
+.settings-page {
+  min-width: 0;
+}
+
+.day-strip {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.day-chip {
+  display: grid;
+  gap: 4px;
+  min-height: 96px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 10px;
+  background: rgba(15, 29, 49, 0.72);
+  color: #f8fafc;
+  padding: 12px;
+  text-align: left;
+}
+
+.day-chip span,
+.day-chip em {
+  color: #94a3b8;
+  font-size: 0.78rem;
+  font-style: normal;
+}
+
+.day-chip.is-current {
+  border-color: rgba(96, 165, 250, 0.7);
+  background: rgba(37, 99, 235, 0.18);
+}
+
+.day-chip.is-complete {
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.practice-option-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.quiz-controls,
+.flashcard-toolbar {
+  align-items: end;
+}
+
+.answer-button {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  line-height: 1.45;
+}
+
+.study-card {
+  width: min(760px, 100%);
+}
+
+.card-text {
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+
+.progress-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.progress-hero h3 {
+  margin: 6px 0;
+  font-size: clamp(2.1rem, 5vw, 4rem);
+}
+
+.progress-action-stack,
+.settings-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.progress-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.topic-list,
+.result-list {
+  display: grid;
+  gap: 10px;
+}
+
+.topic-row,
+.result-row,
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 10px;
+  background: rgba(15, 29, 49, 0.58);
+  color: #f8fafc;
+  padding: 12px;
+}
+
+.result-row em,
+.topic-row span,
+.setting-row span {
+  color: #94a3b8;
+  font-style: normal;
+}
+
+.settings-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.course-modal {
+  width: min(520px, calc(100vw - 32px));
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 14px;
+  background: #111c2e;
+  color: #f8fafc;
+  padding: 0;
+}
+
+.course-modal::backdrop {
+  background: rgba(2, 8, 23, 0.72);
+}
+
+.course-modal form {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.modal-header h3 {
+  margin: 4px 0 0;
+}
+
+.course-choice-list {
+  display: grid;
+  gap: 10px;
+}
+
+.course-choice {
+  display: grid;
+  gap: 4px;
+  min-height: 70px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 10px;
+  background: rgba(15, 29, 49, 0.72);
+  color: #f8fafc;
+  padding: 14px;
+  text-align: left;
+}
+
+.course-choice.is-active {
+  border-color: rgba(96, 165, 250, 0.7);
+}
+
+.course-choice span {
+  color: #94a3b8;
+}
+
+@media (max-width: 1100px) {
+  .quick-access-grid,
+  .progress-grid,
+  .settings-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .day-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .app-shell {
+    display: block;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .main {
+    padding-bottom: 92px;
+  }
+
+  .mobile-bottom-nav {
+    display: grid;
+  }
+
+  .topbar,
+  .progress-hero {
+    display: grid;
+    align-items: stretch;
+  }
+
+  .quiz-start-layout,
+  .quiz-question-layout,
+  .lesson-layout,
+  .source-reader-shell {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .main {
+    padding: 18px 12px 92px;
+  }
+
+  .topbar-actions,
+  .plan-cards,
+  .quick-access-grid,
+  .progress-grid,
+  .settings-grid,
+  .practice-option-grid,
+  .day-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .continue-card {
+    min-height: 260px;
+  }
+
+  .panel,
+  .continue-content,
+  .practice-menu {
+    padding: 16px;
+  }
+
+  .flashcard-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .card-nav {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
 /* 2026-06 polish pass: clean aviation tablet UI, using assets/images hooks when provided. */
 :root {
   --bg: #0a1423;
@@ -914,7 +1426,7 @@ select {
 body {
   background:
     linear-gradient(rgba(10, 20, 35, 0.96), rgba(10, 20, 35, 0.96)),
-    url("assets/images/cockpit-bg.jpg"),
+    url("assets/images/backgrounds/cockpit-bg.jpg"),
     #0a1423;
   background-size: cover;
   background-attachment: fixed;
@@ -984,7 +1496,7 @@ body {
   min-height: 176px;
   background:
     linear-gradient(90deg, rgba(10, 20, 35, 0.96) 0%, rgba(10, 20, 35, 0.76) 48%, rgba(10, 20, 35, 0.46) 100%),
-    url("assets/images/hero-bg.jpg"),
+    url("assets/images/backgrounds/hero-bg.jpg"),
     linear-gradient(135deg, #15243b, #263f63 52%, #7b8190);
   background-size: cover;
   background-position: center;
@@ -1182,7 +1694,7 @@ body {
   min-height: min(54vh, 500px);
   background:
     linear-gradient(rgba(17, 28, 46, 0.92), rgba(17, 28, 46, 0.92)),
-    url("assets/images/clouds.jpg"),
+    url("assets/images/backgrounds/cockpit-glass.jpg"),
     #111c2e;
   background-size: cover;
   background-position: center;
@@ -1332,12 +1844,39 @@ body {
   border-radius: 8px;
   background:
     linear-gradient(rgba(30, 64, 105, 0.82), rgba(17, 28, 46, 0.92)),
-    url("assets/images/clouds.jpg"),
+    url("assets/images/backgrounds/cessna-172s.jpg"),
     #162438;
   background-size: cover;
   color: #bfdbfe;
   font-size: 0.68rem;
   font-weight: 800;
+}
+
+.resource-thumb-charts {
+  background:
+    linear-gradient(rgba(30, 64, 105, 0.76), rgba(17, 28, 46, 0.88)),
+    url("assets/images/questions/sectional-sample.jpg"),
+    #162438;
+  background-size: cover;
+  background-position: center;
+}
+
+.resource-thumb-regulations {
+  background:
+    linear-gradient(rgba(30, 64, 105, 0.7), rgba(17, 28, 46, 0.9)),
+    url("assets/images/questions/metar-weather.png"),
+    #162438;
+  background-size: cover;
+  background-position: center;
+}
+
+.resource-thumb-handbooks {
+  background:
+    linear-gradient(rgba(30, 64, 105, 0.78), rgba(17, 28, 46, 0.9)),
+    url("assets/images/backgrounds/cockpit-glass.jpg"),
+    #162438;
+  background-size: cover;
+  background-position: center;
 }
 
 .empty-resource-card {
@@ -1358,7 +1897,7 @@ body {
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   body {
     padding-bottom: 76px;
   }
@@ -1374,7 +1913,7 @@ body {
     left: 0;
     z-index: 40;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(7, 1fr);
     border-top: 1px solid var(--border);
     background: rgba(7, 17, 31, 0.96);
     backdrop-filter: blur(16px);
@@ -1390,7 +1929,7 @@ body {
     border-radius: 10px;
     background: transparent;
     color: #94a3b8;
-    font-size: 0.72rem;
+    font-size: 0.66rem;
   }
 
   .mobile-nav-button span {

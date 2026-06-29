@@ -198,6 +198,135 @@ const moduleStudyVisuals = {
   }
 };
 
+const moduleDayTitles = {
+  orientation: [
+    "What is a Private Pilot License?",
+    "FAA Handbooks, ACS, and Knowledge Test",
+    "Pilot Certificates",
+    "Medical Certificates and Eligibility",
+    "Documents and Airworthiness",
+    "Review Day",
+    "Module Quiz"
+  ],
+  aerodynamics: [
+    "Four Forces of Flight",
+    "Lift, Airfoils, and Angle of Attack",
+    "Drag, Thrust, and Weight",
+    "Stability and Control",
+    "Stalls and Spins",
+    "Performance Factors",
+    "Module Quiz"
+  ],
+  systems: [
+    "Engine Basics",
+    "Fuel System",
+    "Electrical System",
+    "Flight Instruments",
+    "Pitot-Static System",
+    "Vacuum and Gyro Instruments",
+    "Module Quiz"
+  ],
+  maneuvers: [
+    "Airport Signs and Markings",
+    "Traffic Patterns",
+    "Ground Operations",
+    "Takeoffs",
+    "Approaches and Landings",
+    "Emergency Procedures",
+    "Module Quiz"
+  ],
+  weather: [
+    "Atmosphere Basics",
+    "Clouds and Stability",
+    "Fronts and Pressure Systems",
+    "Thunderstorms",
+    "Icing, Turbulence, and Fog",
+    "METARs and TAFs",
+    "Module Quiz"
+  ],
+  airspace: [
+    "Controlled Airspace",
+    "Uncontrolled Airspace",
+    "Radio Communications",
+    "Special Use Airspace",
+    "Airport Operations",
+    "VFR Weather Minimums",
+    "Module Quiz"
+  ],
+  navigation: [
+    "Sectional Charts",
+    "Pilotage and Dead Reckoning",
+    "VOR Basics",
+    "GPS Basics",
+    "Cross-Country Planning",
+    "Lost Procedures",
+    "Module Quiz"
+  ],
+  performance: [
+    "Takeoff and Landing Performance",
+    "Density Altitude",
+    "Climb and Cruise Performance",
+    "Weight and Balance Basics",
+    "CG and Loading Problems",
+    "Performance Chart Practice",
+    "Module Quiz"
+  ],
+  regulations: [
+    "FAR Part 61 Basics",
+    "FAR Part 91 Basics",
+    "Currency and Passenger Rules",
+    "Weather Minimums",
+    "ADM and Risk Management",
+    "Personal Minimums",
+    "Module Quiz"
+  ],
+  checkride: [
+    "ACS Overview",
+    "Oral Exam Prep",
+    "Scenario Questions",
+    "Weak Area Review",
+    "Full Written Sim",
+    "Missed Questions Review",
+    "Final Review"
+  ]
+};
+
+const courseDays = modules.flatMap((module) => (moduleDayTitles[module.id] || module.know).map((title, index) => ({
+  id: `${module.id}-day-${index + 1}`,
+  moduleId: module.id,
+  day: index + 1,
+  title,
+  estimate: index === 6 ? "20-30 min" : "15-25 min",
+  source: "FAA handbook source",
+  isQuiz: index === 6
+})));
+
+function daysForModule(moduleId) {
+  return courseDays.filter((day) => day.moduleId === moduleId);
+}
+
+function currentModule() {
+  return modules.find((item) => item.id === state.selectedModule) || modules[0];
+}
+
+function completedDayIds() {
+  return state.completedDays || [];
+}
+
+function isDayComplete(dayId) {
+  return completedDayIds().includes(dayId);
+}
+
+function moduleDayProgress(moduleId) {
+  const days = daysForModule(moduleId);
+  const completed = days.filter((day) => isDayComplete(day.id)).length;
+  return { completed, total: days.length, percent: days.length ? Math.round((completed / days.length) * 100) : 0 };
+}
+
+function nextStudyDay() {
+  return courseDays.find((day) => !isDayComplete(day.id)) || courseDays[courseDays.length - 1];
+}
+
 const resources = [
   ["FAA Become a Pilot", "Official starting point for certificate options and FAA pathways.", "https://www.faa.gov/pilots/become"],
   ["Student Pilot Certificate", "Eligibility and application basics before solo.", "https://www.faa.gov/pilots/become/student_cert"],
@@ -971,6 +1100,190 @@ quizQuestions.push(
   q("checkride", "The best checkride mindset is:", ["Calm, prepared, honest, and safety-focused", "Rushed and defensive", "Trying to hide uncertainty", "Memorize without understanding"], 0, "Examiners are looking for safe pilot judgment.")
 );
 
+const expansionTopics = {
+  orientation: {
+    tags: ["certificates", "training path", "ACS", "FAA sources"],
+    prompts: [
+      ["A student asks when the student pilot certificate becomes necessary. What is the safest answer?", "Before solo flight"],
+      ["Which source should guide practical-test preparation?", "Private Pilot ACS"],
+      ["What should you do with aircraft-specific numbers during training?", "Verify them in the POH/AFM"],
+      ["What is the best use of the PHAK during early training?", "Build FAA-grounded knowledge"],
+      ["What does a CFI endorsement usually mean?", "Your instructor found you ready for a specific privilege or test"],
+      ["What is the practical test designed to evaluate?", "Knowledge, risk management, and skill"],
+      ["Which habit makes ground lessons transfer to flying?", "Explain how the topic changes a real decision"],
+      ["What should you bring to a lesson when confused?", "Specific questions and the source you checked"]
+    ]
+  },
+  aerodynamics: {
+    tags: ["aerodynamics", "stalls", "controls", "energy"],
+    prompts: [
+      ["During a steep turn, why does stall speed increase?", "Load factor increases"],
+      ["What directly causes a wing to stall?", "Exceeding critical angle of attack"],
+      ["Which control primarily manages yaw?", "Rudder"],
+      ["What do flaps usually add during approach?", "Lift and drag"],
+      ["What does trim reduce?", "Control pressure"],
+      ["What should you monitor during slow flight?", "Airspeed, coordination, altitude, and stall cues"],
+      ["Why does ground effect matter during landing?", "It reduces induced drag and can create float"],
+      ["What is the best response to an impending stall cue?", "Reduce angle of attack"]
+    ]
+  },
+  systems: {
+    tags: ["systems", "instruments", "POH", "failures"],
+    prompts: [
+      ["Which instruments depend on pitot-static pressure?", "Airspeed indicator, altimeter, and VSI"],
+      ["Where are aircraft limitations published?", "POH/AFM"],
+      ["What should an alternator failure make you manage?", "Electrical load and battery time"],
+      ["Why check fuel visually during preflight?", "Gauges can be inaccurate"],
+      ["What does the tachometer display?", "Engine RPM"],
+      ["What does carburetor heat help address in equipped aircraft?", "Carburetor ice risk"],
+      ["Which source gives emergency procedures for the exact airplane?", "POH/AFM"],
+      ["What is the safest way to learn V-speeds?", "Use your aircraft POH and CFI procedures"]
+    ]
+  },
+  maneuvers: {
+    tags: ["airport operations", "traffic pattern", "landings", "emergencies"],
+    prompts: [
+      ["What should an unstable final approach usually lead to?", "Go around"],
+      ["What is the standard traffic pattern direction unless published otherwise?", "Left traffic"],
+      ["Why brief takeoff emergencies before departure?", "To make early decisions faster"],
+      ["What do ground reference maneuvers teach?", "Wind correction"],
+      ["What is the first priority after an engine failure?", "Maintain aircraft control"],
+      ["Why use checklists even after a cockpit flow?", "To verify critical items"],
+      ["What does pattern altitude discipline support?", "Predictable spacing and energy management"],
+      ["What should you do before crossing a hold short line at a towered airport?", "Receive the proper clearance"]
+    ]
+  },
+  weather: {
+    tags: ["weather", "METAR", "TAF", "hazards"],
+    prompts: [
+      ["What does a METAR report?", "Observed weather"],
+      ["What does a TAF forecast?", "Terminal aerodrome weather"],
+      ["Why is a small temperature-dew point spread important?", "It can signal fog or low cloud risk"],
+      ["What is one major thunderstorm hazard?", "Severe turbulence or wind shear"],
+      ["What does high density altitude reduce?", "Takeoff and climb performance"],
+      ["Why compare weather to personal minimums?", "Legal weather may still exceed your skill"],
+      ["What can gusty surface winds affect most directly?", "Takeoff, landing, and control margins"],
+      ["What should weather study end with?", "A go/no-go decision"]
+    ]
+  },
+  airspace: {
+    tags: ["airspace", "communications", "airport signs", "VFR minimums"],
+    prompts: [
+      ["What is required to enter Class B airspace?", "Explicit ATC clearance"],
+      ["What is normally required before entering Class D?", "Two-way radio communication"],
+      ["What does CTAF support at non-towered airports?", "Traffic awareness"],
+      ["Why check special use airspace?", "Activity may create restrictions or hazards"],
+      ["What do runway numbers represent?", "Magnetic direction rounded to the nearest 10 degrees"],
+      ["Why do VFR cloud clearances exist?", "To preserve see-and-avoid time"],
+      ["What does ATIS provide?", "Airport weather and operational information"],
+      ["What should a radio call be?", "Clear, brief, and predictable"]
+    ]
+  },
+  navigation: {
+    tags: ["navigation", "charts", "VOR", "cross-country"],
+    prompts: [
+      ["What is pilotage based on?", "Visual ground references"],
+      ["What does dead reckoning use?", "Heading, groundspeed, time, and fuel planning"],
+      ["Why are checkpoints chosen carefully?", "They must be identifiable from the air"],
+      ["What does wind correction protect?", "The intended ground track"],
+      ["What does a VOR provide?", "Radio navigation course information"],
+      ["Why plan alternates before departure?", "To avoid improvising under pressure"],
+      ["What does groundspeed affect?", "Time en route and fuel planning"],
+      ["What is a diversion?", "A planned change to another route or airport"]
+    ]
+  },
+  performance: {
+    tags: ["performance", "weight and balance", "density altitude", "risk"],
+    prompts: [
+      ["How is moment calculated?", "Weight times arm"],
+      ["What can an aft CG reduce?", "Stability"],
+      ["What does a tailwind do to takeoff distance?", "Increases it"],
+      ["Why calculate landing distance?", "To confirm runway margin"],
+      ["What does PAVE evaluate?", "Pilot, Aircraft, enVironment, and External pressures"],
+      ["What does IMSAFE evaluate?", "Pilot fitness"],
+      ["Why add margin to performance chart numbers?", "Real conditions and technique vary"],
+      ["What is density altitude?", "Pressure altitude corrected for nonstandard temperature"]
+    ]
+  },
+  regulations: {
+    tags: ["regulations", "currency", "documents", "Part 91"],
+    prompts: [
+      ["Which part covers pilot certification?", "14 CFR Part 61"],
+      ["Which part covers general operating rules?", "14 CFR Part 91"],
+      ["What does ARROW help remember?", "Aircraft documents"],
+      ["Why is proficiency different from currency?", "Legal minimums do not guarantee skill"],
+      ["What does a flight review generally satisfy?", "Recent experience requirement for acting as PIC"],
+      ["What should you check before carrying passengers?", "Currency, medical eligibility, and proficiency"],
+      ["What can NOTAMs affect?", "Runways, navaids, airspace, and procedures"],
+      ["What should preventive maintenance follow?", "Regulatory limits and logbook requirements"]
+    ]
+  },
+  checkride: {
+    tags: ["checkride", "oral prep", "ACS", "risk management"],
+    prompts: [
+      ["What makes a checkride answer stronger?", "Connect the fact to a decision and risk"],
+      ["What should a mock cross-country include?", "Weather, route, airspace, performance, W&B, fuel, and alternates"],
+      ["What should you do if you do not know an answer?", "Say so and use the correct FAA or aircraft source"],
+      ["Why practice scenarios?", "They reveal whether knowledge can be applied"],
+      ["What should aircraft systems answers reference?", "The POH/AFM"],
+      ["What should a passenger briefing cover?", "Seat belts, doors, sterile cockpit, and emergency basics"],
+      ["What is SRM?", "Single-pilot resource management"],
+      ["What is the best final review strategy?", "Review weak areas and explain decisions aloud"]
+    ]
+  }
+};
+
+function buildExpandedQuestions() {
+  const distractors = [
+    "Ignore the source and rely on memory",
+    "Use the same answer for every aircraft",
+    "Ask passengers to decide",
+    "Skip the preflight planning step",
+    "Choose the fastest option without checking risk",
+    "Assume legal minimums always equal safe margins",
+    "Use a random internet comment as the primary source",
+    "Delay the decision until after takeoff"
+  ];
+  return Object.entries(expansionTopics).flatMap(([moduleId, topic]) => {
+    const module = modules.find((item) => item.id === moduleId);
+    return topic.prompts.flatMap(([stem, correct], promptIndex) => {
+      return Array.from({ length: 4 }, (_, variantIndex) => {
+        const scenario = [
+          stem,
+          `In Week ${module.week} study, ${stem.charAt(0).toLowerCase()}${stem.slice(1)}`,
+          `During a preflight briefing, ${stem.charAt(0).toLowerCase()}${stem.slice(1)}`,
+          `For a private pilot applicant, ${stem.charAt(0).toLowerCase()}${stem.slice(1)}`
+        ][variantIndex];
+        const wrong = distractors
+          .filter((item) => item !== correct)
+          .slice((promptIndex + variantIndex) % 4, ((promptIndex + variantIndex) % 4) + 3);
+        while (wrong.length < 3) wrong.push(distractors[(promptIndex + wrong.length) % distractors.length]);
+        return {
+          id: `${moduleId}-${promptIndex + 1}-${variantIndex + 1}`,
+          course: "private-pilot",
+          module: moduleId,
+          moduleId,
+          lessonId: `${moduleId}-day-${(promptIndex % 6) + 1}`,
+          acsCode: "PPL.FAA",
+          source: "FAA public handbooks/ACS-based original study question",
+          difficulty: variantIndex === 0 ? "easy" : variantIndex === 3 ? "hard" : "standard",
+          tags: topic.tags,
+          question: scenario,
+          answers: [correct, ...wrong.slice(0, 3)],
+          correct: 0,
+          explanation: `${correct} is the pilot-safe answer for ${module.title}. Verify aircraft-specific details with the POH/AFM and your CFI.`,
+          whyWrong: wrong.slice(0, 3).reduce((acc, answer) => {
+            acc[answer] = "This option skips an FAA source, aircraft-specific check, or risk-management step.";
+            return acc;
+          }, {})
+        };
+      });
+    });
+  });
+}
+
+quizQuestions.push(...buildExpandedQuestions());
+
 const flashcards = [
   ["orientation", "What does CFI mean?", "Certificated Flight Instructor."],
   ["orientation", "What does DPE mean?", "Designated Pilot Examiner."],
@@ -1006,8 +1319,13 @@ const flashcards = [
 
 const defaultState = {
   completedLessons: [],
+  completedDays: [],
   quizScores: {},
+  quizResults: [],
+  questionStats: {},
+  missedQuestions: {},
   cardConfidence: {},
+  cardSchedule: {},
   seenQuestions: {},
   lastStudyDate: "",
   streak: 0,
@@ -1019,7 +1337,11 @@ const defaultState = {
   selectedSource: "phak",
   seenVideoQuestions: {},
   videoScores: {},
-  flaggedQuestions: {}
+  flaggedQuestions: {},
+  activePracticeMode: "adaptive",
+  settings: {
+    explanations: "immediate"
+  }
 };
 
 let state = loadState();
@@ -1054,6 +1376,76 @@ function loadState() {
 
 function saveState() {
   localStorage.setItem("ppl-study-state", JSON.stringify(state));
+}
+
+function shuffleArray(items) {
+  return [...items].sort(() => Math.random() - 0.5);
+}
+
+function prepareQuestion(raw) {
+  const baseId = raw.id || raw.questionId || `${raw.module}:${raw.question}`;
+  const choices = raw.answers.map((text, index) => ({ text, originalIndex: index }));
+  const shuffled = shuffleArray(choices);
+  return {
+    ...raw,
+    questionId: baseId,
+    id: baseId,
+    course: raw.course || "private-pilot",
+    moduleId: raw.moduleId || raw.module,
+    lessonId: raw.lessonId || `${raw.module}-day-1`,
+    tags: raw.tags || [raw.module],
+    difficulty: raw.difficulty || "standard",
+    source: raw.source || "FAA public study source",
+    answers: shuffled.map((choice) => choice.text),
+    correct: shuffled.findIndex((choice) => choice.originalIndex === raw.correct)
+  };
+}
+
+function moduleLabel(moduleId) {
+  return modules.find((module) => module.id === moduleId)?.title || moduleId;
+}
+
+function questionAccuracy(moduleId) {
+  const stats = Object.values(state.questionStats || {}).filter((item) => item.moduleId === moduleId);
+  const total = stats.reduce((sum, item) => sum + (item.timesAnswered || 0), 0);
+  const correct = stats.reduce((sum, item) => sum + (item.timesCorrect || 0), 0);
+  return total ? Math.round((correct / total) * 100) : null;
+}
+
+function rankedTopicStats() {
+  return modules.map((module) => {
+    const score = state.quizScores[module.id]?.percent || 0;
+    const accuracy = questionAccuracy(module.id);
+    const progress = moduleDayProgress(module.id).percent;
+    return {
+      id: module.id,
+      title: module.title,
+      score,
+      progress,
+      accuracy: accuracy ?? score,
+      attempts: Object.values(state.questionStats || {}).filter((item) => item.moduleId === module.id).reduce((sum, item) => sum + (item.timesAnswered || 0), 0)
+    };
+  });
+}
+
+function weakestModuleId() {
+  const ranked = rankedTopicStats()
+    .filter((item) => item.attempts || item.score || item.progress)
+    .sort((a, b) => (a.accuracy + a.progress) - (b.accuracy + b.progress));
+  return ranked[0]?.id || nextStudyDay().moduleId;
+}
+
+function cardScheduleFor(index) {
+  return state.cardSchedule?.[index] || {};
+}
+
+function isCardDue(index) {
+  const nextReview = cardScheduleFor(index).nextReviewDate;
+  return !nextReview || new Date(nextReview) <= new Date();
+}
+
+function cardsDueCount() {
+  return flashcards.filter((_, index) => isCardDue(index)).length;
 }
 
 function lessonVideosFor(module) {
@@ -1106,39 +1498,49 @@ function setView(view) {
   $$(".nav-button").forEach((button) => button.classList.toggle("is-active", button.dataset.view === view));
   $$(".mobile-nav-button").forEach((button) => button.classList.toggle("is-active", button.dataset.view === view));
   $$(".view").forEach((section) => section.classList.remove("is-active"));
-  $(`#${view}View`).classList.add("is-active");
+  const targetView = $(`#${view}View`);
+  if (!targetView) return;
+  targetView.classList.add("is-active");
   $("#viewTitle").textContent = {
-    dashboard: "Good morning, Alex!",
+    dashboard: greeting(),
     lessons: "Lessons",
-    videoCourse: "Video Course",
     quiz: "Practice",
     flashcards: "Flashcards",
-    resources: "Reader"
+    resources: "Reader",
+    progress: "Progress",
+    settings: "Settings"
   }[view];
 }
 
+function greeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}
+
 function progressFor(module) {
-  return state.completedLessons.includes(module.id);
+  return moduleDayProgress(module.id).percent === 100 || state.completedLessons.includes(module.id);
 }
 
 function renderDashboard() {
-  const done = state.completedLessons.length;
-  const total = modules.length;
+  const done = completedDayIds().length;
+  const total = courseDays.length;
   const percent = total ? Math.round((done / total) * 100) : 0;
   const best = Math.max(0, ...Object.values(state.quizScores).map((score) => score.percent || 0));
-  const next = modules.find((module) => !progressFor(module)) || modules[modules.length - 1];
+  const nextDay = nextStudyDay();
+  const next = modules.find((module) => module.id === nextDay.moduleId) || modules[0];
   const nextVideo = selectedLessonVideoFor(next);
-  const nextProgress = progressFor(next) ? 100 : Math.min(85, 20 + Math.round(((state.videoScores[nextVideo.id]?.percent || 0) / 100) * 40));
+  const nextProgress = moduleDayProgress(next.id).percent || Math.min(85, 12 + Math.round(((state.videoScores[nextVideo.id]?.percent || 0) / 100) * 35));
   const knownCards = Object.values(state.cardConfidence || {}).filter((value) => value === "known").length;
   const flashcardMastery = flashcards.length ? Math.round((knownCards / flashcards.length) * 100) : 0;
-  const goalCompleted = Math.min(3, (done > 0 ? 1 : 0) + (knownCards > 0 ? 1 : 0) + (best > 0 ? 1 : 0));
+  const dueCards = cardsDueCount();
+  const goalCompleted = Math.min(3, (isDayComplete(nextDay.id) ? 1 : 0) + (dueCards < flashcards.length ? 1 : 0) + (state.quizResults?.some((result) => new Date(result.date).toDateString() === new Date().toDateString()) ? 1 : 0));
   const goalPercent = Math.round((goalCompleted / 3) * 100);
-  const weakest = best >= 80 ? "Regulations" : "Weather";
-  const nextTask = progressFor(next)
-    ? "Review weak areas and retake practice questions."
-    : state.videoScores[nextVideo.id]
-      ? "Read the assigned handbook section, then take practice questions."
-      : "Watch the next lesson video, then read the assigned handbook section.";
+  const weakest = moduleLabel(weakestModuleId());
+  const nextTask = nextDay.isQuiz
+    ? "Take the module quiz and review missed questions."
+    : "Read the briefing, review cards, then answer adaptive questions.";
 
   const todayDate = document.querySelector("#todayDate");
   if (todayDate) {
@@ -1150,7 +1552,9 @@ function renderDashboard() {
   }
   $("#overallPercent").textContent = `${percent}%`;
   $("#overallMeter").style.width = `${percent}%`;
-  $("#lessonCount").textContent = `${done ? "Review" : "1"} Lesson`;
+  $("#lessonCount").textContent = nextDay.isQuiz ? "Module Quiz" : "Lesson";
+  $("#lessonPlanDetail").textContent = `Day ${nextDay.day} · ${nextDay.title}`;
+  $("#cardsDueText").textContent = `${dueCards} Cards Due`;
   $("#bestScore").textContent = `${best}%`;
   $("#quizReadiness").textContent = best >= 80 ? "Looking checkride-minded." : "Aim for 80%+ module scores.";
   $("#studyStreak").textContent = `${state.streak}`;
@@ -1161,15 +1565,16 @@ function renderDashboard() {
   $("#dailyGoalText").textContent = `${goalCompleted} / 3 completed`;
   $("#weakestArea").textContent = weakest;
 
-  $("#nextMilestone").textContent = `Next up: ${next.title}`;
-  $("#nextMilestoneHint").textContent = next.goal;
+  $("#nextMilestone").textContent = `Next up: ${nextDay.title}`;
+  $("#nextMilestoneHint").textContent = nextTask;
   const nextUpButton = document.querySelector("#nextUpButton");
   if (nextUpButton) {
     nextUpButton.dataset.openModule = next.id;
     delete nextUpButton.dataset.jump;
   }
 
-  $("#dashboardTimeline").innerHTML = modules.map((module) => {
+  const timeline = $("#dashboardTimeline");
+  if (timeline) timeline.innerHTML = modules.map((module) => {
     const isDone = progressFor(module);
     return `
       <div class="timeline-item ${isDone ? "is-done" : ""}">
@@ -1188,15 +1593,15 @@ function renderDashboard() {
     continueCard.innerHTML = `
       <div class="continue-content">
         <span class="eyebrow">Continue Studying</span>
-        <h3>Week ${next.week}: ${next.title}</h3>
-        <p>Lesson ${Math.min(next.week + 2, 5)} of 5 <span aria-hidden="true">-</span> ${next.title}</p>
+        <h3>${next.title}</h3>
+        <p>Private Pilot · Day ${nextDay.day}: ${nextDay.title}</p>
         <div class="continue-progress">
           <div class="meter"><span style="width: ${nextProgress}%"></span></div>
           <strong>${nextProgress}%</strong>
         </div>
         <div class="continue-actions">
-          <button class="primary-button" data-open-module="${next.id}" type="button"><span aria-hidden="true">Play</span> Resume Lesson</button>
-          <button class="ghost-button" data-jump="flashcards" type="button">Cards Review Cards</button>
+          <button class="primary-button" data-open-module="${next.id}" type="button"><span aria-hidden="true">▶</span> Resume Lesson</button>
+          <button class="ghost-button" data-flash-mode="due" type="button">Review Due Cards</button>
         </div>
       </div>
       <div class="hero-plane" aria-hidden="true"></div>
@@ -1208,16 +1613,19 @@ function renderLessons() {
   $("#moduleList").innerHTML = modules.map((module) => {
     const isDone = progressFor(module);
     const isActive = state.selectedModule === module.id;
-    const rows = module.know.slice(0, 5).map((item, index) => {
-      const rowState = isDone ? "is-complete" : isActive && index === 2 ? "is-current" : index > 2 ? "is-locked" : "";
-      const marker = isDone ? "OK" : index > 2 ? "--" : "O";
-      return `<span class="module-lesson-row ${rowState}"><b>${marker}</b>${item}</span>`;
+    const dayProgress = moduleDayProgress(module.id);
+    const rows = daysForModule(module.id).map((day) => {
+      const complete = isDayComplete(day.id);
+      const current = day.id === nextStudyDay().id;
+      const rowState = complete ? "is-complete" : current ? "is-current" : "";
+      const marker = complete ? "✓" : day.isQuiz ? "Q" : day.day;
+      return `<span class="module-lesson-row ${rowState}"><b>${marker}</b>${day.title}</span>`;
     }).join("");
     return `
       <button class="module-button ${isActive ? "is-active" : ""}" data-module="${module.id}" type="button">
         <strong>Week ${module.week}: ${module.title}</strong>
-        <span>${isDone ? "Complete" : isActive ? "Current module" : "Course path"} - ${module.know.length} targets</span>
-        <em class="module-meta">${12 + module.week * 3} min lesson - ${module.week + 8} cards - ${module.week + 4} questions</em>
+        <span>${isDone ? "Complete" : isActive ? "Current module" : "Course path"} - ${dayProgress.completed}/${dayProgress.total} days</span>
+        <em class="module-meta">${dayProgress.percent}% complete - ${module.week + 8} cards - ${quizQuestions.filter((question) => question.module === module.id).length} questions</em>
         <span class="module-lesson-list">${rows}</span>
       </button>
     `;
@@ -1225,6 +1633,8 @@ function renderLessons() {
 
   const module = modules.find((item) => item.id === state.selectedModule) || modules[0];
   const isDone = progressFor(module);
+  const moduleDays = daysForModule(module.id);
+  const activeDay = moduleDays.find((day) => !isDayComplete(day.id)) || moduleDays[moduleDays.length - 1];
   const reading = lessonReadings[module.id];
   const notes = lessonNotes[module.id];
   const videoSources = videoSourcesFor(module);
@@ -1238,21 +1648,31 @@ function renderLessons() {
   const selectedVideoIndex = Math.max(0, lessonVideos.findIndex((video) => video.id === selectedVideo.id));
   const previousVideo = lessonVideos[(selectedVideoIndex - 1 + lessonVideos.length) % lessonVideos.length];
   const nextVideo = lessonVideos[(selectedVideoIndex + 1) % lessonVideos.length];
-  const lessonProgress = isDone ? 100 : Math.min(85, 20 + Math.round(((state.videoScores[selectedVideo.id]?.percent || 0) / 100) * 40));
-  const tabs = ["overview", "watch", "read", "practice", "notes"];
+  const lessonProgress = moduleDayProgress(module.id).percent;
+  const tabs = ["overview", "learn", "examples", "practice", "source"];
   const tabLabels = {
     overview: "Overview",
-    watch: "Watch",
-    read: "Read",
+    learn: "Learn",
+    examples: "Examples",
     practice: "Practice",
-    notes: "Notes"
+    source: "Source"
   };
   const tabContent = {
     overview: `
       <section class="lesson-tab-panel">
+        <div class="day-strip">
+          ${moduleDays.map((day) => `
+            <button class="day-chip ${isDayComplete(day.id) ? "is-complete" : ""} ${day.id === activeDay.id ? "is-current" : ""}" data-set-day="${day.id}" type="button">
+              <span>${day.isQuiz ? "Quiz" : `Day ${day.day}`}</span>
+              <strong>${day.title}</strong>
+              <em>${day.estimate}</em>
+            </button>
+          `).join("")}
+        </div>
         <div class="overview-grid">
           <article class="study-block">
-            <h4>Lesson Goal</h4>
+            <h4>Current Day</h4>
+            <p><strong>Day ${activeDay.day}: ${activeDay.title}</strong></p>
             <p>${module.goal}</p>
             <div class="lesson-progress-row"><span>Current progress</span><strong>${lessonProgress}%</strong></div>
             <div class="meter"><span style="width: ${lessonProgress}%"></span></div>
@@ -1263,62 +1683,15 @@ function renderLessons() {
         </div>
       </section>
     `,
-    watch: `
-      <section class="lesson-tab-panel watch-panel">
-        <div class="panel-header">
-          <div>
-            <span class="eyebrow">Selected Video</span>
-            <h4>${selectedVideo.title}</h4>
-          </div>
-          <a class="resource-link" href="https://www.youtube.com/watch?v=${selectedVideo.id}&list=${COURSE_PLAYLIST_ID}" target="_blank" rel="noreferrer">Open on YouTube</a>
-        </div>
-        <div class="video-frame" id="videoFrame">
-          <iframe id="lessonVideo" title="${selectedVideo.title}" src="${youtubeEmbedUrl(selectedVideo.id, COURSE_PLAYLIST_ID)}" ${youtubeIframeAttrs()}></iframe>
-        </div>
-        <div class="video-nav-row">
-          <button class="ghost-button" data-lesson-video="${previousVideo.id}" type="button">Previous Video</button>
-          <button class="ghost-button" data-lesson-video="${nextVideo.id}" type="button">Next Video</button>
-          <button class="primary-button" id="startLessonVideoTest" type="button">Test After Watching</button>
-        </div>
-        <div class="lesson-video-strip" aria-label="Lesson videos">
-          ${lessonVideos.map((video, index) => `
-            <button class="lesson-video-button ${video.id === selectedVideo.id ? "is-active" : ""}" data-lesson-video="${video.id}" type="button">
-              <span>${index + 1}</span>
-              <strong>${video.title}</strong>
-              <em>${state.videoScores[video.id] ? `${state.videoScores[video.id].percent}% best` : "Not tested"}</em>
-            </button>
-          `).join("")}
-        </div>
-        <div class="lesson-video-quiz" id="lessonVideoQuiz">
-          <div class="score-display">
-            <span class="eyebrow">Video Test</span>
-            <h3>Watch, then test recall.</h3>
-            <p>Questions are tied to the selected video and rotate after each attempt.</p>
-          </div>
-        </div>
-        <details class="video-search-details">
-          <summary>Additional video searches</summary>
-          <div class="video-library" id="videoLibrary">
-            ${videoSources.map((source) => `
-              <article class="video-card">
-                <span class="eyebrow">${source.provider}</span>
-                <h5>${source.title}</h5>
-                <a class="resource-link" href="${source.href}" target="_blank" rel="noreferrer">Open Search</a>
-              </article>
-            `).join("")}
-          </div>
-        </details>
-      </section>
-    `,
-    read: `
+    learn: `
       <section class="lesson-tab-panel">
         <div class="reader-panel">
           <div class="panel-header">
             <div>
-              <span class="eyebrow">Lesson Briefing</span>
-              <h4>Read and summarize</h4>
+              <span class="eyebrow">Learn</span>
+              <h4>${activeDay.title}</h4>
             </div>
-            <span class="section-count">${sourcePlan.length} readings</span>
+            <span class="section-count">${activeDay.estimate}</span>
           </div>
           <p class="brief-text">${reading.brief}</p>
           <div class="reading-sections">
@@ -1330,6 +1703,54 @@ function renderLessons() {
             `).join("")}
           </div>
         </div>
+      </section>
+    `,
+    examples: `
+      <section class="lesson-tab-panel">
+        <div class="panel-header">
+          <div>
+            <span class="eyebrow">Examples</span>
+            <h4>Scenario and common mistake</h4>
+          </div>
+        </div>
+        <div class="reading-sections">
+          <article class="reading-section">
+            <h5>Example scenario</h5>
+            <p>${reading.drill}</p>
+          </article>
+          <article class="reading-section">
+            <h5>Common mistake</h5>
+            <p>Memorizing the term without saying how it changes a preflight, in-flight, or checkride decision.</p>
+          </article>
+        </div>
+        <div class="keyterm-list">
+          <h5>Key terms</h5>
+          <div>${notes.keyTerms.map((term) => `<span>${term}</span>`).join("")}</div>
+        </div>
+      </section>
+    `,
+    practice: `
+      <section class="lesson-tab-panel">
+        <div class="practice-brief">
+          <div>
+            <span class="eyebrow">Practice</span>
+            <h4>Day ${activeDay.day}: ${activeDay.title}</h4>
+            <p>Review related cards, then take a module quiz or adaptive practice.</p>
+          </div>
+          <div class="button-row">
+            <button class="ghost-button" data-flash-mode="module" type="button">Review Module Cards</button>
+            <button class="primary-button" id="lessonQuiz" type="button">${activeDay.isQuiz ? "Take Module Quiz" : "Start Module Quiz"}</button>
+          </div>
+        </div>
+        ${renderQuizVisual(module.id, true)}
+        <div class="drill-box">
+          <strong>Check yourself</strong>
+          <p>${reading.drill}</p>
+        </div>
+      </section>
+    `,
+    source: `
+      <section class="lesson-tab-panel">
         <div class="lesson-reader-layout">
           <div class="lesson-source-list">
             ${sourcePlan.map(([docId, label, page], index) => {
@@ -1356,31 +1777,6 @@ function renderLessons() {
             <iframe id="lessonReaderFrame" title="Lesson handbook chapter reader" src="${selectedSourcePlan ? lessonSourceEntryUrl(selectedSourcePlan) : lessonSourceUrl(selectedDoc.id, selectedPage)}"></iframe>
           </article>
         </div>
-      </section>
-    `,
-    practice: `
-      <section class="lesson-tab-panel">
-        <div class="practice-brief">
-          <div>
-            <span class="eyebrow">Practice</span>
-            <h4>Test Week ${module.week}</h4>
-            <p>Use this as a short written-test checkpoint for the selected module.</p>
-          </div>
-          <button class="primary-button" id="lessonQuiz" type="button">Start Module Test</button>
-        </div>
-        ${renderQuizVisual(module.id, true)}
-        <div class="drill-box">
-          <strong>Check yourself</strong>
-          <p>${reading.drill}</p>
-        </div>
-      </section>
-    `,
-    notes: `
-      <section class="lesson-tab-panel">
-        <div class="keyterm-list">
-          <h5>Key terms</h5>
-          <div>${notes.keyTerms.map((term) => `<span>${term}</span>`).join("")}</div>
-        </div>
         <div class="checklist">
           <h4>Related links</h4>
           <div class="resource-links">
@@ -1395,12 +1791,12 @@ function renderLessons() {
   $("#lessonDetail").innerHTML = `
     <div class="lesson-hero">
       <div>
-        <span class="eyebrow">Lesson ${module.week}</span>
+        <span class="eyebrow">Week ${module.week}</span>
         <h3>${module.title}</h3>
-        <p>${module.goal}</p>
+        <p>Current: Day ${activeDay.day} · ${activeDay.title}</p>
       </div>
       <button class="${isDone ? "ghost-button" : "primary-button"}" id="toggleLesson" type="button">
-        ${isDone ? "Mark Incomplete" : "Mark as Complete"}
+        ${isDayComplete(activeDay.id) ? "Mark Day Incomplete" : "Mark Day Complete"}
       </button>
     </div>
     <div class="lesson-tabs" role="tablist" aria-label="Lesson sections">
@@ -1467,33 +1863,51 @@ function renderQuizSetup() {
 
 function renderQuizIntro() {
   const selectedId = $("#quizModule").value === "all" ? state.selectedModule || "orientation" : $("#quizModule").value;
+  const bankSize = quizQuestions.filter((question) => $("#quizModule").value === "all" || question.module === $("#quizModule").value).length;
   $("#quizCard").innerHTML = `
     <div class="quiz-start-layout">
       <div class="practice-menu">
         <span class="eyebrow">Practice Test</span>
         <h3>Choose your test mode</h3>
         <div class="practice-option-grid">
-          <button class="practice-option" id="startQuizInline" type="button"><span>10</span><strong>Quick 10 Questions</strong><em>Short focused practice</em></button>
-          <button class="practice-option" data-start-quiz type="button"><span>WA</span><strong>Weak Areas Only</strong><em>Focus on what you need</em></button>
-          <button class="practice-option" data-start-quiz type="button"><span>SIM</span><strong>Full Written Sim</strong><em>Simulate the real test</em></button>
-          <button class="practice-option" data-start-quiz type="button"><span>MISS</span><strong>Missed Questions</strong><em>Review mistakes</em></button>
-          <button class="practice-option" data-start-quiz type="button"><span>ACS</span><strong>ACS Oral Review</strong><em>Prepare for your checkride</em></button>
+          <button class="practice-option" data-start-mode="adaptive" type="button"><span>AD</span><strong>Adaptive Practice</strong><em>Best next questions</em></button>
+          <button class="practice-option" data-start-mode="quick" type="button"><span>10</span><strong>Quick 10</strong><em>Short random session</em></button>
+          <button class="practice-option" data-start-mode="weak" type="button"><span>WA</span><strong>Weak Areas</strong><em>Lowest scores first</em></button>
+          <button class="practice-option" data-start-mode="missed" type="button"><span>MISS</span><strong>Missed Questions</strong><em>Fix mistakes</em></button>
+          <button class="practice-option" data-start-mode="sim" type="button"><span>60</span><strong>Full Written Sim</strong><em>60-question exam</em></button>
+          <button class="practice-option" data-start-mode="oral" type="button"><span>ACS</span><strong>ACS Oral Review</strong><em>Scenario prompts</em></button>
         </div>
-        <p class="practice-note">Current bank: ${$("#quizModule").selectedOptions[0]?.textContent || "Selected module"}</p>
+        <p class="practice-note">Current bank: ${$("#quizModule").selectedOptions[0]?.textContent || "Selected module"} · ${bankSize} questions</p>
       </div>
       ${renderQuizVisual(selectedId, true)}
     </div>
   `;
 }
 
-function startQuiz() {
+function startQuiz(mode = state.activePracticeMode || "adaptive") {
   const moduleId = $("#quizModule").value;
   state.selectedModule = moduleId === "all" ? state.selectedModule : moduleId;
-  const bankId = moduleId;
-  const testSize = moduleId === "all" ? 20 : 10;
-  const bank = quizQuestions
-    .filter((question) => moduleId === "all" || question.module === moduleId)
-    .map((question) => ({ ...question, questionId: `${question.module}:${question.question}` }));
+  state.activePracticeMode = mode;
+  const bankId = `${mode}:${moduleId}`;
+  const testSize = mode === "sim" ? 60 : mode === "quick" ? 10 : mode === "oral" ? 8 : moduleId === "all" ? 20 : 10;
+  const baseBank = quizQuestions
+    .filter((question) => moduleId === "all" || question.module === moduleId);
+  const missedIds = Object.keys(state.missedQuestions || {});
+  const weakId = weakestModuleId();
+  let bank = baseBank;
+  if (mode === "missed") bank = baseBank.filter((question) => missedIds.includes(question.id || `${question.module}:${question.question}`));
+  if (mode === "weak") bank = baseBank.filter((question) => question.module === weakId);
+  if (mode === "adaptive") {
+    const currentId = nextStudyDay().moduleId;
+    bank = [
+      ...baseBank.filter((question) => question.module === weakId),
+      ...baseBank.filter((question) => question.module === currentId),
+      ...baseBank.filter((question) => missedIds.includes(question.id || `${question.module}:${question.question}`)),
+      ...baseBank
+    ];
+  }
+  if (!bank.length) bank = baseBank.length ? baseBank : quizQuestions;
+  bank = bank.map(prepareQuestion);
   const seen = state.seenQuestions[bankId] || [];
   let candidates = bank.filter((question) => !seen.includes(question.questionId));
 
@@ -1503,8 +1917,7 @@ function startQuiz() {
     showToast("Question bank reset after you worked through it.");
   }
 
-  currentQuiz = candidates
-    .sort(() => Math.random() - 0.5)
+  currentQuiz = shuffleArray(candidates)
     .slice(0, Math.min(testSize, candidates.length));
   state.seenQuestions[bankId] = [
     ...(state.seenQuestions[bankId] || []),
@@ -1552,16 +1965,56 @@ function answerQuestion(answerIndex) {
   const correct = answerIndex === question.correct;
   quizAnswers[quizIndex] = correct;
   question.selectedAnswer = answerIndex;
+  const id = question.questionId;
+  const previousStats = state.questionStats?.[id] || {
+    moduleId: question.module,
+    lessonId: question.lessonId,
+    tags: question.tags || [question.module],
+    timesAnswered: 0,
+    timesCorrect: 0
+  };
+  state.questionStats = {
+    ...(state.questionStats || {}),
+    [id]: {
+      ...previousStats,
+      lastSeen: new Date().toISOString(),
+      timesAnswered: previousStats.timesAnswered + 1,
+      timesCorrect: previousStats.timesCorrect + (correct ? 1 : 0),
+      confidence: correct ? "good" : "weak"
+    }
+  };
+  state.missedQuestions = { ...(state.missedQuestions || {}) };
+  if (correct) {
+    delete state.missedQuestions[id];
+  } else {
+    state.missedQuestions[id] = {
+      questionText: question.question,
+      moduleId: question.module,
+      explanation: question.explanation,
+      date: new Date().toISOString()
+    };
+  }
+  saveState();
   $$(".answer-button").forEach((button) => {
     const index = Number(button.dataset.answer);
     button.disabled = true;
     button.classList.toggle("is-correct", index === question.correct);
     button.classList.toggle("is-wrong", index === answerIndex && !correct);
   });
-  $("#answerFeedback").innerHTML = `
+  const immediate = state.settings?.explanations !== "end";
+  $("#answerFeedback").innerHTML = immediate ? `
     <div class="explanation">
       <strong>${correct ? "Correct" : "Review this one"}</strong>
       <p>${question.explanation}</p>
+      <div class="quiz-nav-row">
+        <button class="ghost-button" id="prevQuestion" type="button" ${quizIndex === 0 ? "disabled" : ""}>Previous</button>
+        <button class="primary-button" id="nextQuestion" type="button">${quizIndex + 1 === currentQuiz.length ? "Finish Test" : "Next Question"}</button>
+      </div>
+    </div>
+  ` : `
+    <div class="explanation">
+      <strong>Answer saved</strong>
+      <p>Explanations are set to show at the end of the test.</p>
       <div class="quiz-nav-row">
         <button class="ghost-button" id="prevQuestion" type="button" ${quizIndex === 0 ? "disabled" : ""}>Previous</button>
         <button class="primary-button" id="nextQuestion" type="button">${quizIndex + 1 === currentQuiz.length ? "Finish Test" : "Next Question"}</button>
@@ -1582,7 +2035,8 @@ function nextQuestion() {
   const correct = quizAnswers.filter(Boolean).length;
   const percent = Math.round((correct / currentQuiz.length) * 100);
   const moduleId = $("#quizModule").value;
-  const previous = state.quizScores[moduleId]?.percent || 0;
+  const scoreKey = moduleId === "all" ? state.activePracticeMode || "all" : moduleId;
+  const previous = state.quizScores[scoreKey]?.percent || 0;
   const topicStats = currentQuiz.reduce((stats, question, index) => {
     const topic = question.module;
     stats[topic] ||= { correct: 0, total: 0 };
@@ -1596,9 +2050,20 @@ function nextQuestion() {
   const strongTopics = rankedTopics.filter((topic) => topic.percent >= 80).slice(0, 3);
   const weakTopics = rankedTopics.filter((topic) => topic.percent < 80).sort((a, b) => a.percent - b.percent).slice(0, 3);
   const missed = currentQuiz.filter((question, index) => !quizAnswers[index]);
-  state.quizScores[moduleId] = { percent: Math.max(previous, percent), last: percent, date: new Date().toISOString() };
+  const result = {
+    mode: state.activePracticeMode || "practice",
+    bank: moduleId,
+    percent,
+    correct,
+    total: currentQuiz.length,
+    date: new Date().toISOString(),
+    weakTopics: weakTopics.map((topic) => topic.topic)
+  };
+  state.quizScores[scoreKey] = { percent: Math.max(previous, percent), last: percent, date: result.date };
+  state.quizResults = [result, ...(state.quizResults || [])].slice(0, 20);
   saveState();
   renderDashboard();
+  renderProgress();
 
   $("#quizCard").innerHTML = `
     <div class="score-display score-result">
@@ -1625,6 +2090,7 @@ function nextQuestion() {
         `).join("") : "<p>No missed questions on this attempt.</p>"}
       </div>
       <button class="primary-button" id="retakeQuiz" type="button">Retake Test</button>
+      ${missed.length ? `<button class="ghost-button" data-start-mode="missed" type="button">Retake Missed</button>` : ""}
     </div>
   `;
 }
@@ -1715,7 +2181,24 @@ function flipCurrentCard() {
 
 function markCard(confidence) {
   const cardId = selectedCardIds[currentCardIndex];
+  const schedule = cardScheduleFor(cardId);
+  const intervals = { again: 0.02, hard: 1, good: 3, known: 7 };
+  const easeDelta = { again: -0.2, hard: -0.05, good: 0.08, known: 0.18 };
+  const nextInterval = confidence === "again"
+    ? intervals.again
+    : Math.max(intervals[confidence], (schedule.interval || 1) * (confidence === "known" ? 2.4 : confidence === "good" ? 1.8 : 1.15));
+  const nextDate = new Date(Date.now() + nextInterval * 86400000);
   state.cardConfidence[cardId] = confidence;
+  state.cardSchedule = {
+    ...(state.cardSchedule || {}),
+    [cardId]: {
+      nextReviewDate: nextDate.toISOString(),
+      interval: nextInterval,
+      ease: Math.max(1.3, (schedule.ease || 2.3) + easeDelta[confidence]),
+      reviews: (schedule.reviews || 0) + 1,
+      lastReviewed: new Date().toISOString()
+    }
+  };
   saveState();
   recordStudyActivity();
   showToast(`Card marked ${confidence}.`);
@@ -1724,6 +2207,7 @@ function markCard(confidence) {
 }
 
 function renderVideoCourse() {
+  if (!$("#courseVideoList") || !$("#courseVideoDetail")) return;
   const selected = courseVideos.find((video) => video.id === state.selectedCourseVideo) || courseVideos[0];
   const selectedPool = questionsForCourseVideo(selected);
   const score = state.videoScores[selected.id];
@@ -1941,7 +2425,7 @@ function renderSourceLibrary() {
     </div>
     ${visibleDocs.length ? visibleDocs.map((doc) => `
       <button class="source-card ${state.selectedSource === doc.id ? "is-active" : ""}" data-source-doc="${doc.id}" data-source-page="1" type="button">
-        <span class="resource-thumb">${doc.shortTitle}</span>
+        <span class="resource-thumb resource-thumb-handbooks">${doc.shortTitle}</span>
         <span class="source-badge">${doc.shortTitle}</span>
         <strong>${doc.title}</strong>
         <em>${doc.description}</em>
@@ -1969,38 +2453,130 @@ function renderResources() {
   $$(".filter-pill").forEach((button) => button.classList.toggle("is-active", button.dataset.resourceFilter === activeResourceFilter));
   const search = $("#resourceSearch");
   if (search && search.value !== resourceSearchTerm) search.value = resourceSearchTerm;
-  $("#resourceGrid").innerHTML = filteredResources.map(([title, description, href]) => `
+  $("#resourceGrid").innerHTML = filteredResources.map(([title, description, href]) => {
+    const category = categoryFor(title, description);
+    return `
     <article class="resource-card">
-      <span class="resource-thumb">${title.split(" ").map((word) => word[0]).join("").slice(0, 3)}</span>
+      <span class="resource-thumb resource-thumb-${category}">${title.split(" ").map((word) => word[0]).join("").slice(0, 3)}</span>
       <span class="eyebrow">Free resource</span>
       <h3>${title}</h3>
       <p>${description}</p>
       <a class="resource-link" href="${href}" target="_blank" rel="noreferrer">Open</a>
     </article>
-  `).join("") || `<article class="resource-card empty-resource-card"><h3>No resources found</h3><p>Try a broader search or switch back to All.</p></article>`;
+  `;
+  }).join("") || `<article class="resource-card empty-resource-card"><h3>No resources found</h3><p>Try a broader search or switch back to All.</p></article>`;
+}
+
+function renderProgress() {
+  const root = $("#progressPage");
+  if (!root) return;
+  const doneDays = completedDayIds().length;
+  const totalDays = courseDays.length;
+  const coursePercent = totalDays ? Math.round((doneDays / totalDays) * 100) : 0;
+  const best = Math.max(0, ...Object.values(state.quizScores || {}).map((score) => score.percent || 0));
+  const knownCards = Object.values(state.cardConfidence || {}).filter((value) => value === "known").length;
+  const ranked = rankedTopicStats();
+  const weakest = ranked.filter((item) => item.attempts || item.score).sort((a, b) => a.accuracy - b.accuracy).slice(0, 4);
+  const strongest = ranked.filter((item) => item.attempts || item.score).sort((a, b) => b.accuracy - a.accuracy).slice(0, 4);
+  const recent = state.quizResults || [];
+  root.innerHTML = `
+    <div class="progress-hero panel">
+      <div>
+        <span class="eyebrow">Readiness</span>
+        <h3>${Math.max(coursePercent, best)}%</h3>
+        <p>${nextStudyDay().title} is the next useful study step.</p>
+      </div>
+      <div class="progress-action-stack">
+        <button class="primary-button" data-open-module="${nextStudyDay().moduleId}" type="button">Resume</button>
+        <button class="ghost-button" data-start-mode="adaptive" type="button">Practice</button>
+      </div>
+    </div>
+    <div class="progress-grid">
+      <article class="panel">
+        <span class="eyebrow">Course</span>
+        <h3>${doneDays}/${totalDays} days</h3>
+        <div class="meter"><span style="width: ${coursePercent}%"></span></div>
+        <p>${coursePercent}% complete</p>
+      </article>
+      <article class="panel">
+        <span class="eyebrow">Written</span>
+        <h3>${best}%</h3>
+        <div class="meter amber"><span style="width: ${best}%"></span></div>
+        <p>Best saved readiness score</p>
+      </article>
+      <article class="panel">
+        <span class="eyebrow">Cards</span>
+        <h3>${knownCards}/${flashcards.length}</h3>
+        <div class="meter green"><span style="width: ${flashcards.length ? Math.round((knownCards / flashcards.length) * 100) : 0}%"></span></div>
+        <p>${cardsDueCount()} due today</p>
+      </article>
+    </div>
+    <div class="progress-grid">
+      <article class="panel">
+        <span class="eyebrow">Weakest Topics</span>
+        <div class="topic-list">${(weakest.length ? weakest : [{ title: moduleLabel(weakestModuleId()), accuracy: 0 }]).map((item) => `<button class="text-row-button" data-start-mode="weak" type="button"><strong>${item.title}</strong><span>${item.accuracy}% accuracy</span></button>`).join("")}</div>
+      </article>
+      <article class="panel">
+        <span class="eyebrow">Strongest Topics</span>
+        <div class="topic-list">${(strongest.length ? strongest : ranked.slice(0, 3)).map((item) => `<div class="topic-row"><strong>${item.title}</strong><span>${item.accuracy}%</span></div>`).join("")}</div>
+      </article>
+    </div>
+    <article class="panel">
+      <div class="panel-header">
+        <div>
+          <span class="eyebrow">Recent Tests</span>
+          <h3>Saved attempts</h3>
+        </div>
+        <button class="text-button" data-start-mode="missed" type="button">Retake missed</button>
+      </div>
+      <div class="result-list">
+        ${recent.length ? recent.slice(0, 8).map((result) => `<div class="result-row"><strong>${result.percent}%</strong><span>${result.mode} · ${result.correct}/${result.total}</span><em>${new Date(result.date).toLocaleDateString()}</em></div>`).join("") : "<p>No saved test results yet.</p>"}
+      </div>
+    </article>
+  `;
+}
+
+function renderSettings() {
+  const root = $("#settingsPage");
+  if (!root) return;
+  root.innerHTML = `
+    <div class="settings-grid">
+      <article class="panel">
+        <span class="eyebrow">Course</span>
+        <h3>Private Pilot</h3>
+        <p>Instrument, Commercial, CFI, and custom courses are ready as future options in the course selector.</p>
+        <button class="ghost-button" data-open-course-modal type="button">Change Course</button>
+      </article>
+      <article class="panel">
+        <span class="eyebrow">Practice</span>
+        <h3>Explanations</h3>
+        <label class="setting-row"><span>Show explanations after each answer</span><input type="checkbox" id="settingImmediateExplanations" ${state.settings?.explanations !== "end" ? "checked" : ""}></label>
+      </article>
+      <article class="panel">
+        <span class="eyebrow">Data</span>
+        <h3>Progress tools</h3>
+        <div class="button-row">
+          <button class="ghost-button" id="exportProgressSettings" type="button">Export JSON</button>
+          <button class="danger-button" id="resetProgressSettings" type="button">Reset Progress</button>
+        </div>
+      </article>
+    </div>
+  `;
 }
 
 function exportProgress() {
-  const doneTitles = modules.filter(progressFor).map((module) => `Week ${module.week}: ${module.title}`);
-  const bestScores = Object.entries(state.quizScores)
-    .map(([id, score]) => `${id}: best ${score.percent}%`)
-    .join("\n") || "No quiz scores yet.";
-  const text = [
-    "PPL Study Deck Progress",
-    `Exported: ${new Date().toLocaleString()}`,
-    "",
-    `Lessons complete: ${state.completedLessons.length}/${modules.length}`,
-    ...doneTitles.map((title) => `- ${title}`),
-    "",
-    "Quiz scores:",
-    bestScores,
-    "",
-    `Study streak: ${state.streak} ${state.streak === 1 ? "day" : "days"}`
-  ].join("\n");
-  navigator.clipboard?.writeText(text).then(
-    () => showToast("Progress copied to clipboard."),
-    () => showToast("Clipboard unavailable. Try selecting progress manually later.")
-  );
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    app: "PPL Study Deck",
+    state
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `ppl-study-progress-${new Date().toISOString().slice(0, 10)}.json`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+  showToast("Progress export downloaded.");
 }
 
 function resetProgress() {
@@ -2019,14 +2595,27 @@ function renderAll() {
   renderQuizSetup();
   renderFlashcards();
   renderResources();
+  renderProgress();
+  renderSettings();
 }
 
 document.addEventListener("click", (event) => {
   const nav = event.target.closest("[data-view]");
-  if (nav) setView(nav.dataset.view);
+  if (nav) {
+    renderProgress();
+    renderSettings();
+    setView(nav.dataset.view);
+  }
 
   const jump = event.target.closest("[data-jump]");
   if (jump) setView(jump.dataset.jump);
+
+  const courseModalButton = event.target.closest("[data-open-course-modal]");
+  if (courseModalButton) {
+    const modal = $("#courseModal");
+    if (modal?.showModal) modal.showModal();
+    else showToast("Private Pilot is active. More courses are coming soon.");
+  }
 
   const openModule = event.target.closest("[data-open-module]");
   if (openModule) {
@@ -2045,6 +2634,17 @@ document.addEventListener("click", (event) => {
     saveState();
     renderLessons();
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  const setDayButton = event.target.closest("[data-set-day]");
+  if (setDayButton) {
+    const day = courseDays.find((item) => item.id === setDayButton.dataset.setDay);
+    if (day) {
+      state.selectedModule = day.moduleId;
+      state.selectedLessonTab = day.isQuiz ? "practice" : "learn";
+      saveState();
+      renderLessons();
+    }
   }
 
   const lessonTab = event.target.closest("[data-lesson-tab]");
@@ -2138,20 +2738,27 @@ document.addEventListener("click", (event) => {
   }
 
   if (event.target.id === "toggleLesson") {
-    const id = state.selectedModule;
-    state.completedLessons = state.completedLessons.includes(id)
-      ? state.completedLessons.filter((item) => item !== id)
-      : [...state.completedLessons, id];
+    const module = currentModule();
+    const activeDay = daysForModule(module.id).find((day) => !isDayComplete(day.id)) || daysForModule(module.id).at(-1);
+    const id = activeDay.id;
+    state.completedDays = isDayComplete(id)
+      ? completedDayIds().filter((item) => item !== id)
+      : [...completedDayIds(), id];
+    const moduleComplete = moduleDayProgress(module.id).percent === 100;
+    state.completedLessons = moduleComplete
+      ? Array.from(new Set([...(state.completedLessons || []), module.id]))
+      : (state.completedLessons || []).filter((item) => item !== module.id);
     recordStudyActivity();
     saveState();
     renderDashboard();
     renderLessons();
+    renderProgress();
   }
 
   if (event.target.id === "lessonQuiz") {
     setView("quiz");
     $("#quizModule").value = state.selectedModule;
-    startQuiz();
+    startQuiz("module");
   }
 
   const revealHint = event.target.closest("[data-reveal-hint]");
@@ -2161,7 +2768,25 @@ document.addEventListener("click", (event) => {
     revealHint.textContent = "Hint shown";
   }
 
-  if (event.target.id === "startQuiz" || event.target.id === "startQuizInline" || event.target.id === "retakeQuiz" || event.target.closest("[data-start-quiz]")) startQuiz();
+  const startMode = event.target.closest("[data-start-mode]");
+  if (startMode) {
+    setView("quiz");
+    if (startMode.dataset.startMode === "weak") $("#quizModule").value = weakestModuleId();
+    startQuiz(startMode.dataset.startMode);
+  }
+
+  if (event.target.id === "startQuiz" || event.target.id === "startQuizInline" || event.target.id === "retakeQuiz" || event.target.closest("[data-start-quiz]")) {
+    startQuiz(state.activePracticeMode || "adaptive");
+  }
+
+  const flashMode = event.target.closest("[data-flash-mode]");
+  if (flashMode) {
+    state.selectedDeck = flashMode.dataset.flashMode === "module" ? state.selectedModule : "all";
+    currentCardIndex = 0;
+    saveState();
+    renderFlashcards();
+    setView("flashcards");
+  }
 
   const flagButton = event.target.closest("[data-flag-question]");
   if (flagButton) {
@@ -2193,6 +2818,9 @@ document.addEventListener("click", (event) => {
 
   const confidence = event.target.closest("[data-confidence]");
   if (confidence) markCard(confidence.dataset.confidence);
+
+  if (event.target.id === "exportProgressSettings") exportProgress();
+  if (event.target.id === "resetProgressSettings") resetProgress();
 });
 
 $("#quizModule").addEventListener("change", (event) => {
@@ -2230,5 +2858,16 @@ $("#resourceSearch")?.addEventListener("input", (event) => {
 
 $("#exportProgress").addEventListener("click", exportProgress);
 $("#resetProgress").addEventListener("click", resetProgress);
+
+document.addEventListener("change", (event) => {
+  if (event.target.id === "settingImmediateExplanations") {
+    state.settings = {
+      ...(state.settings || {}),
+      explanations: event.target.checked ? "immediate" : "end"
+    };
+    saveState();
+    showToast("Setting saved.");
+  }
+});
 
 renderAll();
